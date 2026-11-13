@@ -1,0 +1,121 @@
+from enum import Enum
+from abc import ABC, abstractmethod
+
+
+class Status(Enum):
+    CHASE = "chase"
+    FRIGHTENED = "frightened"
+    EATEN = "eaten"
+    SPAWN = "spawn"
+    FROZEN = "frozen"
+    START = "start"
+
+
+class Personality(Enum):
+
+    BLINKY = "blinky"
+    PINKY = "pinky"
+    INKY = "inky"
+    CLYDE = "clyde"
+
+
+class Color(Enum):
+
+    RED = "red"
+    PINK = "pink"
+    CYAN = "cyan"
+    ORANGE = "orange"
+    BLUE = "blue"
+
+
+class Ghost(ABC):
+
+    _coords: tuple[int, int]
+    _edible: bool
+    _respawn_point: tuple[int, int]
+    _status: Status
+
+    def __init__(self, p_coords: tuple[int, int]):
+
+        self._coords = p_coords
+        self._respawn_point = p_coords
+        self._edible = False
+        self._status = Status.START
+
+    @abstractmethod
+    def chase_pacman(self) -> None:
+        pass
+
+    # Test methods
+
+    @abstractmethod
+    def print_info(self) -> None:
+        pass
+
+
+class Blinky(Ghost):
+
+    _personality: Personality = Personality.BLINKY
+    _color: Color = Color.RED
+
+    def __init__(self, p_coords):
+        super().__init__(p_coords)
+
+    def chase_pacman(self):
+        print("Direct chase")
+
+    def print_info(self) -> None:
+        print(f"Hello I'm Ghost {self._personality.value}")
+        print("And my chase is:", end="")
+        self.chase_pacman()
+
+
+class Pinky(Ghost):
+
+    _personality: Personality = Personality.PINKY
+    _color: Color = Color.PINK
+
+    def __init__(self, p_coords):
+        super().__init__(p_coords)
+
+    def chase_pacman(self):
+        print("Ambush chase")
+
+    def print_info(self) -> None:
+        print(f"Hello I'm Ghost {self._personality.value}")
+        print("And my chase is:", end="")
+        self.chase_pacman()
+
+
+class Inky(Ghost):
+
+    _personality: Personality = Personality.INKY
+    _color: Color = Color.CYAN
+
+    def __init__(self, p_coords):
+        super().__init__(p_coords)
+
+    def chase_pacman(self):
+        print("Unpredictible chase")
+
+    def print_info(self) -> None:
+        print(f"Hello I'm Ghost {self._personality.value}")
+        print("And my chase is:", end="")
+        self.chase_pacman()
+
+
+class Clyde(Ghost):
+
+    _personality: Personality = Personality.CLYDE
+    _color: Color = Color.ORANGE
+
+    def __init__(self, p_coords):
+        super().__init__(p_coords)
+
+    def chase_pacman(self):
+        print("Indiferent chase")
+
+    def print_info(self) -> None:
+        print(f"Hello I'm Ghost {self._personality.value}")
+        print("And my chase is:", end="")
+        self.chase_pacman()
