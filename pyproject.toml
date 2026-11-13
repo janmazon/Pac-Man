@@ -1,0 +1,24 @@
+[project]
+name = "pac-man"
+version = "0.1.0"
+description = "The classic Pac-Man game is back"
+readme = "README.md"
+authors = [
+    { name = "jcamarer", email = "jcamarer@student.42urduliz.com" },
+    { name = "aeiros-t", email = "aeiros-t@student.42urduliz.com" }
+]
+requires-python = ">=3.10"
+
+dependencies = [
+    "pydantic>=2.13.5",
+    "pygame>=2.6.1"
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.19.1",
+    "flake8>=7.3.0",
+]
+
+[tool.mypy]
+plugins = ["pydantic.mypy"]
