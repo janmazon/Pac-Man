@@ -8,3 +8,4 @@ venv/
 .Python
 .mypy_cache/
 .pytest_cache/
+.python-version
