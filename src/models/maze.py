@@ -5,10 +5,18 @@ class Maze():
 
     _map: list[list[Cell]]
     _test: list[list[int]]
+    _height: int
+    _width: int
 
     def __init__(self, mazegen: list[list[int]]) -> None:
         self._test = mazegen
         self._create_cells(mazegen)
+        self._height = len(mazegen)
+
+        if mazegen:
+            self._width = len(mazegen[0])
+        else:
+            self._width = 0
 
     def _create_cells(self, mazgen: list[list[int]]) -> None:
 
@@ -23,6 +31,14 @@ class Maze():
     def getCell(self, x: int, y: int) -> Cell:
 
         return self._map[y][x]
+
+    def getHeight(self) -> int:
+
+        return self._height
+
+    def getWidth(self) -> int:
+
+        return self._width
 
     # Test methods
 

@@ -11,7 +11,7 @@ class Level():
     _score: int
     _cheats: bool
 
-    def __init__(self, mazegen: list[list[int]]):
+    def __init__(self, mazegen: list[list[int]]) -> None:
         self._maze = Maze(mazegen)
         self._initialize_ghosts()
         self._initialize_pacman()
@@ -24,17 +24,33 @@ class Level():
     def setMaze(self, p_maze: Maze) -> None:
         self._maze = p_maze
 
+    def getGhosts(self) -> list[Ghost]:
+        return self._ghosts
+
+    def setGhosts(self, p_ghosts: list[Ghost]) -> None:
+        self._ghosts = p_ghosts
+
+    def getPacman(self) -> PacMan:
+        return self._pacman
+
+    def setPacman(self, p_pacman: PacMan) -> None:
+        self._pacman = p_pacman
+
     def _initialize_ghosts(self) -> None:
 
+        max_x = self._maze.getWidth() - 1
+        max_y = self._maze.getHeight() - 1
         self._ghosts = []
         self._ghosts.append(Blinky((0, 0)))
-        self._ghosts.append(Pinky((0, 0)))
-        self._ghosts.append(Inky((0, 0)))
-        self._ghosts.append(Clyde((0, 0)))
+        self._ghosts.append(Pinky((max_x, 0)))
+        self._ghosts.append(Inky((0, max_y)))
+        self._ghosts.append(Clyde((max_x, max_y)))
 
     def _initialize_pacman(self) -> None:
 
-        self._pacman = PacMan((0, 0), 3)
+        center_x = self._maze.getWidth() // 2
+        center_y = self._maze.getHeight() // 2
+        self._pacman = PacMan((center_x, center_y), 3)
 
     # Test methods
 
