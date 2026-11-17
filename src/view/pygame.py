@@ -1,12 +1,13 @@
 import pygame
 from src.models.level import Level
+from src.models.cell import Cell
 
 
 class Pygame:
 
-    _scale: float = 50
-    _offset_x: float = 100
-    _offset_y: float = 100
+    _scale: float = 40
+    _offset_x: float = 50
+    _offset_y: float = 50
     _min_x: float
     _max_x: float
     _min_y: float
@@ -76,59 +77,78 @@ class Pygame:
 
             for x in range(len(map[y])):
 
-                if map[y][x]._E == 1:
-                    source = (x+1, y)
-                    target = (x + 1, y + 1)
+                if not map[y][x]._is_42:
+                    self._draw_maze(y, x, screen, map)
+                    self._draw_pellets(y, x, screen)
+                else:
+                    self._draw_42(y, x, screen)
 
-                    source_x, source_y = self.world_to_screen(*source)
-                    target_x, target_y = self.world_to_screen(*target)
-                    pygame.draw.line(
-                        screen, "black", (source_x, source_y),
-                        (target_x, target_y),
-                        4)
+    def _draw_maze(self, y: int, x: int, screen: pygame.Surface,
+                   map: list[list[Cell]]) -> None:
 
-                    if x == 1 and y == 0:
-                        print(f"Coords=({(x, y)})")
-                        print(
-                            f"Este: Source=({(source_x, source_y)}) Target=({(target_x, target_y)})")
-                if map[y][x]._W == 1:
-                    source = (x, y)
-                    target = (x, y + 1)
-                    source_x, source_y = self.world_to_screen(*source)
-                    target_x, target_y = self.world_to_screen(*target)
-                    pygame.draw.line(
-                        screen, "black", (source_x, source_y),
-                        (target_x, target_y),
-                        4)
+        if map[y][x]._E == 1:
+            source = (x+1, y)
+            target = (x + 1, y + 1)
 
-                    if x == 1 and y == 0:
-                        print(f"Coords=({(x, y)})")
-                        print(
-                            f"Oeste: Source=({(source_x, source_y)}) Target=({(target_x, target_y)})")
-                if map[y][x]._N == 1:
-                    source = (x, y)
-                    target = (x + 1, y)
-                    source_x, source_y = self.world_to_screen(*source)
-                    target_x, target_y = self.world_to_screen(*target)
-                    pygame.draw.line(
-                        screen, "black", (source_x, source_y),
-                        (target_x, target_y),
-                        4)
+            source_x, source_y = self.world_to_screen(*source)
+            target_x, target_y = self.world_to_screen(*target)
+            pygame.draw.line(
+                screen, "black", (source_x, source_y),
+                (target_x, target_y),
+                4)
 
-                    if x == 1 and y == 0:
-                        print(f"Coords=({(x, y)})")
-                        print(
-                            f"Norte: Source=({(source_x, source_y)}) Target=({(target_x, target_y)})")
-                if map[y][x]._S == 1:
-                    source = (x, y + 1)
-                    target = (x + 1, y + 1)
-                    source_x, source_y = self.world_to_screen(*source)
-                    target_x, target_y = self.world_to_screen(*target)
-                    pygame.draw.line(
-                        screen, "black", (source_x, source_y),
-                        (target_x, target_y),
-                        4)
-                    if x == 1 and y == 0:
-                        print(f"Coords=({(x, y)})")
-                        print(
-                            f"Sur: Source=({(source_x, source_y)}) Target=({(target_x, target_y)})")
+        if map[y][x]._W == 1:
+            source = (x, y)
+            target = (x, y + 1)
+            source_x, source_y = self.world_to_screen(*source)
+            target_x, target_y = self.world_to_screen(*target)
+            pygame.draw.line(
+                screen, "black", (source_x, source_y),
+                (target_x, target_y),
+                4)
+
+        if map[y][x]._N == 1:
+            source = (x, y)
+            target = (x + 1, y)
+            source_x, source_y = self.world_to_screen(*source)
+            target_x, target_y = self.world_to_screen(*target)
+            pygame.draw.line(
+                screen, "black", (source_x, source_y),
+                (target_x, target_y),
+                4)
+
+        if map[y][x]._S == 1:
+            source = (x, y + 1)
+            target = (x + 1, y + 1)
+            source_x, source_y = self.world_to_screen(*source)
+            target_x, target_y = self.world_to_screen(*target)
+            pygame.draw.line(
+                screen, "black", (source_x, source_y),
+                (target_x, target_y),
+                4)
+
+    def _draw_pellets(self, y: int, x: int, screen: pygame.Surface) -> None:
+
+        radius = 3
+        source = (x, y)
+        target = (x + 1, y + 1)
+
+        source_x, source_y = self.world_to_screen(*source)
+        target_x, target_y = self.world_to_screen(*target)
+
+        circle_x = (source_x + target_x) / 2
+        circle_y = (source_y + target_y) / 2
+
+        pygame.draw.circle(screen, "black", (circle_x, circle_y), radius)
+
+    def _draw_42(self, y: int, x: int, screen: pygame.Surface) -> None:
+
+        source = (x, y)
+        target = (x + 1, y + 1)
+
+        source_x, source_y = self.world_to_screen(*source)
+        target_x, target_y = self.world_to_screen(*target)
+
+        width = target_x - source_x
+        height = target_y - source_y
+        pygame.draw.rect(screen, "black", (source_x, source_y, width, height))
