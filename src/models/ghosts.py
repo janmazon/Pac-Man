@@ -34,6 +34,7 @@ class Ghost(ABC):
     _edible: bool
     _respawn_point: tuple[int, int]
     _status: Status
+    _color: Color
 
     def __init__(self, p_coords: tuple[int, int]) -> None:
 
@@ -41,6 +42,14 @@ class Ghost(ABC):
         self._respawn_point = p_coords
         self._edible = False
         self._status = Status.START
+
+    def getCoords(self) -> tuple[int, int]:
+
+        return self._coords
+
+    def getColor(self) -> Color:
+
+        return self._color
 
     @abstractmethod
     def chase_pacman(self) -> None:

@@ -53,6 +53,8 @@ class Pygame:
         running = True
 
         self._paint_map(screen)
+        self._draw_pacman(screen)
+        self._draw_ghosts(screen)
         pygame.display.flip()
 
         while running:
@@ -140,6 +142,38 @@ class Pygame:
         circle_y = (source_y + target_y) / 2
 
         pygame.draw.circle(screen, "black", (circle_x, circle_y), radius)
+
+    def _draw_pacman(self, screen: pygame.Surface) -> None:
+
+        radius = 14
+        x, y = self._level.getPacman().getCoords()
+        source = (x, y)
+        target = (x + 1, y + 1)
+
+        source_x, source_y = self.world_to_screen(*source)
+        target_x, target_y = self.world_to_screen(*target)
+
+        circle_x = (source_x + target_x) / 2
+        circle_y = (source_y + target_y) / 2
+
+        pygame.draw.circle(screen, "yellow", (circle_x, circle_y), radius)
+
+    def _draw_ghosts(self, screen: pygame.Surface) -> None:
+
+        radius = 14
+        for ghost in self._level.getGhosts():
+            x, y = ghost.getCoords()
+            source = (x, y)
+            target = (x + 1, y + 1)
+
+            source_x, source_y = self.world_to_screen(*source)
+            target_x, target_y = self.world_to_screen(*target)
+
+            circle_x = (source_x + target_x) / 2
+            circle_y = (source_y + target_y) / 2
+
+            pygame.draw.circle(screen, ghost.getColor().value,
+                               (circle_x, circle_y), radius)
 
     def _draw_42(self, y: int, x: int, screen: pygame.Surface) -> None:
 
