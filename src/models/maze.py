@@ -6,7 +6,7 @@ class Maze():
     _map: list[list[Cell]]
     _test: list[list[int]]
 
-    def __init__(self, mazegen: list[list[int]]):
+    def __init__(self, mazegen: list[list[int]]) -> None:
         self._test = mazegen
         self._create_cells(mazegen)
 
@@ -22,7 +22,7 @@ class Maze():
 
     def getCell(self, x: int, y: int) -> Cell:
 
-        return self._map[x][y]
+        return self._map[y][x]
 
     # Test methods
 

@@ -35,7 +35,7 @@ class Ghost(ABC):
     _respawn_point: tuple[int, int]
     _status: Status
 
-    def __init__(self, p_coords: tuple[int, int]):
+    def __init__(self, p_coords: tuple[int, int]) -> None:
 
         self._coords = p_coords
         self._respawn_point = p_coords
@@ -58,10 +58,10 @@ class Blinky(Ghost):
     _personality: Personality = Personality.BLINKY
     _color: Color = Color.RED
 
-    def __init__(self, p_coords):
+    def __init__(self, p_coords: tuple[int, int]) -> None:
         super().__init__(p_coords)
 
-    def chase_pacman(self):
+    def chase_pacman(self) -> None:
         print("Direct chase")
 
     def print_info(self) -> None:
@@ -75,10 +75,10 @@ class Pinky(Ghost):
     _personality: Personality = Personality.PINKY
     _color: Color = Color.PINK
 
-    def __init__(self, p_coords):
+    def __init__(self, p_coords: tuple[int, int]) -> None:
         super().__init__(p_coords)
 
-    def chase_pacman(self):
+    def chase_pacman(self) -> None:
         print("Ambush chase")
 
     def print_info(self) -> None:
@@ -92,10 +92,10 @@ class Inky(Ghost):
     _personality: Personality = Personality.INKY
     _color: Color = Color.CYAN
 
-    def __init__(self, p_coords):
+    def __init__(self, p_coords: tuple[int, int]) -> None:
         super().__init__(p_coords)
 
-    def chase_pacman(self):
+    def chase_pacman(self) -> None:
         print("Unpredictible chase")
 
     def print_info(self) -> None:
@@ -109,10 +109,10 @@ class Clyde(Ghost):
     _personality: Personality = Personality.CLYDE
     _color: Color = Color.ORANGE
 
-    def __init__(self, p_coords):
+    def __init__(self, p_coords: tuple[int, int]) -> None:
         super().__init__(p_coords)
 
-    def chase_pacman(self):
+    def chase_pacman(self) -> None:
         print("Indiferent chase")
 
     def print_info(self) -> None:
