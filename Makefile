@@ -4,7 +4,7 @@ install:
 	uv sync
 	uv pip install $(MAZEGEN)
 
-run:
+run: install
 	uv run python -m src
 
 debug:
