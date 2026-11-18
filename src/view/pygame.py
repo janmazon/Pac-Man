@@ -5,13 +5,10 @@ from src.models.cell import Cell
 
 class Pygame:
 
+    _MARGIN: int = 40
     _scale: float = 40
     _offset_x: float = 50
     _offset_y: float = 50
-    _min_x: float
-    _max_x: float
-    _min_y: float
-    _max_y: float
     _level: Level
 
     def __init__(self, p_level: Level):
@@ -34,6 +31,19 @@ class Pygame:
             y * self._scale + self._offset_y
         )
 
+    def _update_layout(self, win_w: int, win_h: int) -> None:
+        """Compute scale and offsets so the maze fits and is centered."""
+        maze_map = self._level.getMaze()._map
+        rows = len(maze_map)
+        cols = len(maze_map[0])
+
+        avail_w = win_w - 2 * self._MARGIN
+        avail_h = win_h - 2 * self._MARGIN
+
+        self._scale = max(1, min(avail_w // cols, avail_h // rows))
+        self._offset_x = (win_w - self._scale * cols) // 2
+        self._offset_y = (win_h - self._scale * rows) // 2
+
     def show_view(self) -> None:
 
         pygame.init()
@@ -46,9 +56,11 @@ class Pygame:
         WIDTH = screen_width * 2 // 3
         HEIGHT = screen_height * 2 // 3
 
-        screen = pygame.display.set_mode((WIDTH, HEIGHT))
+        screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
 
         screen.fill("white")
+
+        self._update_layout(*screen.get_size())
 
         running = True
 
