@@ -14,6 +14,14 @@ class Pygame:
     def __init__(self, p_level: Level):
         self._level = p_level
 
+    @property
+    def _wall_width(self) -> int:
+        return max(1, self._scale // 10)
+
+    @property
+    def _pellet_radius(self) -> int:
+        return max(1, self._scale // 12)
+
     def world_to_screen(self, x: float, y: float) -> tuple[float, float]:
         """function that converts graph coordinates into screen coordinates.
 
@@ -58,16 +66,9 @@ class Pygame:
 
         screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
 
-        screen.fill("white")
-
         self._update_layout(*screen.get_size())
-
+        clock = pygame.time.Clock()
         running = True
-
-        self._paint_map(screen)
-        self._draw_pacman(screen)
-        self._draw_ghosts(screen)
-        pygame.display.flip()
 
         while running:
 
@@ -80,6 +81,16 @@ class Pygame:
 
                     if event.key == pygame.K_SPACE:
                         running = False
+
+                elif event.type == pygame.VIDEORESIZE:
+                    self._update_layout(*screen.get_size())
+
+            screen.fill("white")
+            clock.tick(60)
+            self._paint_map(screen)
+            self._draw_pacman(screen)
+            self._draw_ghosts(screen)
+            pygame.display.flip()
 
         pygame.quit()
 
@@ -109,7 +120,7 @@ class Pygame:
             pygame.draw.line(
                 screen, "black", (source_x, source_y),
                 (target_x, target_y),
-                4)
+                self._wall_width)
 
         if map[y][x]._W == 1:
             source = (x, y)
@@ -119,7 +130,7 @@ class Pygame:
             pygame.draw.line(
                 screen, "black", (source_x, source_y),
                 (target_x, target_y),
-                4)
+                self._wall_width)
 
         if map[y][x]._N == 1:
             source = (x, y)
@@ -129,7 +140,7 @@ class Pygame:
             pygame.draw.line(
                 screen, "black", (source_x, source_y),
                 (target_x, target_y),
-                4)
+                self._wall_width)
 
         if map[y][x]._S == 1:
             source = (x, y + 1)
@@ -139,11 +150,11 @@ class Pygame:
             pygame.draw.line(
                 screen, "black", (source_x, source_y),
                 (target_x, target_y),
-                4)
+                self._wall_width)
 
     def _draw_pellets(self, y: int, x: int, screen: pygame.Surface) -> None:
 
-        radius = 3
+        radius = self._pellet_radius
         source = (x, y)
         target = (x + 1, y + 1)
 
@@ -157,7 +168,7 @@ class Pygame:
 
     def _draw_pacman(self, screen: pygame.Surface) -> None:
 
-        radius = 14
+        radius = self._pellet_radius * 3
         x, y = self._level.getPacman().getCoords()
         source = (x, y)
         target = (x + 1, y + 1)
@@ -172,7 +183,7 @@ class Pygame:
 
     def _draw_ghosts(self, screen: pygame.Surface) -> None:
 
-        radius = 14
+        radius = self._pellet_radius * 3
         for ghost in self._level.getGhosts():
             x, y = ghost.getCoords()
             source = (x, y)
