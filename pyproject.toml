@@ -22,3 +22,7 @@ dev = [
 
 [tool.mypy]
 plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+    module = "mazegenerator"
+    ignore_missing_imports = true

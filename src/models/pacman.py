@@ -17,6 +17,10 @@ class PacMan():
         self._invincible = False
         self._speed = 1.0
 
+    def getCoords(self) -> tuple[int, int]:
+
+        return self._coords
+
     # Test methods
 
     def print_info(self) -> None:
