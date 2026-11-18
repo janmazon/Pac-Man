@@ -35,6 +35,7 @@ class Ghost(ABC):
     _respawn_point: tuple[int, int]
     _status: Status
     _color: Color
+    _personality: Personality
 
     def __init__(self, p_coords: tuple[int, int]) -> None:
 
