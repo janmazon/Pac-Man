@@ -15,6 +15,8 @@ class Pygame:
         self._level = p_level
         self._pacman_frames: list[pygame.Surface] = []
         self._assets_loaded: bool = False
+        self._bg_original: pygame.Surface | None = None
+        self._bg_scaled: pygame.Surface | None = None
 
     @property
     def _wall_width(self) -> int:
@@ -54,6 +56,11 @@ class Pygame:
         self._offset_x = (win_w - self._scale * cols) // 2
         self._offset_y = (win_h - self._scale * rows) // 2
 
+        if self._bg_original is not None:
+            self._bg_scaled = pygame.transform.smoothscale(
+                self._bg_original, (win_w, win_h)
+            )
+
     def show_view(self) -> None:
 
         pygame.init()
@@ -73,6 +80,7 @@ class Pygame:
         running = True
 
         self._load_assets()
+        self._update_layout(*screen.get_size())
 
         while running:
 
@@ -89,7 +97,10 @@ class Pygame:
                 elif event.type == pygame.VIDEORESIZE:
                     self._update_layout(*screen.get_size())
 
-            screen.fill("white")
+            if self._bg_scaled is not None:
+                screen.blit(self._bg_scaled, (0, 0))
+            else:
+                screen.fill("white")
             clock.tick(60)
             self._paint_map(screen)
             self._draw_pacman(screen)
@@ -186,10 +197,8 @@ class Pygame:
         pygame.draw.circle(screen, "yellow", (circle_x, circle_y), radius) """
 
     def _draw_pacman(self, screen: pygame.Surface) -> None:
-        coords = self._level.getPacman().getCoords()
-        print("Coordenadas de Pac-Man:", coords)  # <- Comprueba en la terminal que cambian o existen
-        
-        x, y = coords
+
+        x, y = self._level.getPacman().getCoords()
         source_x, source_y = self.world_to_screen(x, y)
 
         if self._pacman_frames:
@@ -238,10 +247,8 @@ class Pygame:
             return
         
         target_size = int(self._scale)
-        p_frame_w = 592
-        p_frame_h = 592
-        g_frame_w = 512
-        g_frame_h = 512
+        frame_w = 512
+        frame_h = 512
 
         # 1. Cargar Pac-Man
         try:
@@ -249,14 +256,14 @@ class Pygame:
             sheet_p.set_colorkey((0, 0, 0))
             self._pacman_frames = []
             for i in range(3):
-                frame = pygame.Surface((p_frame_w, p_frame_h), pygame.SRCALPHA)
-                frame.blit(sheet_p, (0, 0), (i * p_frame_w, 0, p_frame_w, p_frame_h))
+                frame = pygame.Surface((frame_w, frame_h), pygame.SRCALPHA)
+                frame.blit(sheet_p, (0, 0), (i * frame_w, 0, frame_w, frame_h))
                 self._pacman_frames.append(pygame.transform.scale(frame, (target_size, target_size)))
         except Exception as e:
             print(f"Error cargando Pac-Man: {e}")
             self._pacman_frames = []
 
-        # 2. Cargar Fantasmas (Blinky, Pinky, Inky, Clyde) -> 128x32 con 4 frames (Arriba, Abajo, Derecha, Izquierda)
+        # 2. Cargar Fantasmas (Blinky, Pinky, Inky, Clyde) con 4 frames (Arriba, Abajo, Derecha, Izquierda)
         ghost_files = {
             "RED": "assets/blinky.png",
             "PINK": "assets/pinky.png",
@@ -271,12 +278,20 @@ class Pygame:
                 sheet_g.set_colorkey((0, 0, 0))
                 frames = []
                 for i in range(4): # 4 direcciones
-                    frame = pygame.Surface((g_frame_w, g_frame_h), pygame.SRCALPHA)
-                    frame.blit(sheet_g, (0, 0), (i * g_frame_w, 0, g_frame_w, g_frame_h))
+                    frame = pygame.Surface((frame_w, frame_h), pygame.SRCALPHA)
+                    frame.blit(sheet_g, (0, 0), (i * frame_w, 0, frame_w, frame_h))
                     frames.append(pygame.transform.scale(frame, (target_size, target_size)))
                 self._ghost_frames[color_name] = frames
             except Exception as e:
                 print(f"Error cargando fantasma {color_name}: {e}")
                 self._ghost_frames[color_name] = []
 
+        # 3. Cargar fondo de pantalla
+        try:
+            self._bg_original = pygame.image.load(
+                "assets/background.png"
+            ).convert()
+        except Exception as e:
+            print(f"Error cargando fondo: {e}")
+            self._bg_original = None
         self._assets_loaded = True
