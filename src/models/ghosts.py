@@ -58,9 +58,10 @@ class Ghost(ABC):
 
     # Test methods
 
-    @abstractmethod
     def print_info(self) -> None:
-        pass
+        print(f"Hello I'm Ghost {self._personality.value}")
+        print("And my chase is:", end="")
+        self.chase_pacman()
 
 
 class Blinky(Ghost):
@@ -74,11 +75,6 @@ class Blinky(Ghost):
     def chase_pacman(self) -> None:
         print("Direct chase")
 
-    def print_info(self) -> None:
-        print(f"Hello I'm Ghost {self._personality.value}")
-        print("And my chase is:", end="")
-        self.chase_pacman()
-
 
 class Pinky(Ghost):
 
@@ -90,11 +86,6 @@ class Pinky(Ghost):
 
     def chase_pacman(self) -> None:
         print("Ambush chase")
-
-    def print_info(self) -> None:
-        print(f"Hello I'm Ghost {self._personality.value}")
-        print("And my chase is:", end="")
-        self.chase_pacman()
 
 
 class Inky(Ghost):
@@ -108,11 +99,6 @@ class Inky(Ghost):
     def chase_pacman(self) -> None:
         print("Unpredictible chase")
 
-    def print_info(self) -> None:
-        print(f"Hello I'm Ghost {self._personality.value}")
-        print("And my chase is:", end="")
-        self.chase_pacman()
-
 
 class Clyde(Ghost):
 
@@ -124,8 +110,3 @@ class Clyde(Ghost):
 
     def chase_pacman(self) -> None:
         print("Indiferent chase")
-
-    def print_info(self) -> None:
-        print(f"Hello I'm Ghost {self._personality.value}")
-        print("And my chase is:", end="")
-        self.chase_pacman()

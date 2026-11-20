@@ -1,3 +1,4 @@
-from .pygame import Pygame
+from .game_view import GameView
+from .main_menu_view import MainMenuView
 
-__all__ = ["Pygame"]
+__all__ = ["GameView", "MainMenuView"]

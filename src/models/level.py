@@ -1,6 +1,7 @@
 from .maze import Maze
 from .pacman import PacMan
-from .ghosts import Ghost, Blinky, Pinky, Inky, Clyde
+from .ghosts import Ghost
+from src.factories import GhostFactory
 
 
 class Level():
@@ -38,13 +39,14 @@ class Level():
 
     def _initialize_ghosts(self) -> None:
 
-        max_x = self._maze.getWidth() - 1
-        max_y = self._maze.getHeight() - 1
-        self._ghosts = []
+        col = self._maze.getWidth() - 1
+        row = self._maze.getHeight() - 1
+        self._ghosts = GhostFactory.create_all(col, row)
+        """ self._ghosts = []
         self._ghosts.append(Blinky((0, 0)))
         self._ghosts.append(Pinky((max_x, 0)))
         self._ghosts.append(Inky((0, max_y)))
-        self._ghosts.append(Clyde((max_x, max_y)))
+        self._ghosts.append(Clyde((max_x, max_y))) """
 
     def _initialize_pacman(self) -> None:
 
