@@ -1,8 +1,9 @@
 import pygame
 
 from src.models.level import Level
-from src.view.game_screen import GameScreen
-from src.view.screen_manager import ScreenManager
+from .game_screen import GameScreen
+from .screen_manager import ScreenManager
+from .main_menu_screen import MainMenuScreen
 
 
 class App:
@@ -24,7 +25,8 @@ class App:
             clock = pygame.time.Clock()
 
             manager = ScreenManager()
-            manager.switch(GameScreen(manager, self._level))
+            # manager.switch(GameScreen(manager, self._level))
+            manager.switch(MainMenuScreen(manager))
 
             self._running = True
             while self._running and manager.current is not None:

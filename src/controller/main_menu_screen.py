@@ -1,19 +1,17 @@
 from .screen import Screen
 from .screen_manager import ScreenManager
-from src.models import Level
-from .level_view import LevelView
+from src.view import MainMenuView
 import pygame
 
 
-class GameScreen(Screen):
+class MainMenuScreen(Screen):
 
-    def __init__(self, manager: "ScreenManager", level: Level) -> None:
+    def __init__(self, manager: "ScreenManager") -> None:
         super().__init__(manager)
-        self._level = level
-        self._view = LevelView(level)
+        self._view = MainMenuView()
 
     def on_enter(self) -> None:
-        self._view.load_assets()          # necesita la ventana ya creada
+        self._view.load_assets()
         surface = pygame.display.get_surface()
         if surface is not None:
             self._view.resize(*surface.get_size())

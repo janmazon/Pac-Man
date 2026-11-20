@@ -1,6 +1,6 @@
 from .models import Level
 from mazegenerator import MazeGenerator
-from .view import App
+from .controller import App
 # from .view import LevelView
 
 
