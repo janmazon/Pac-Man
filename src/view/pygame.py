@@ -13,6 +13,10 @@ class Pygame:
 
     def __init__(self, p_level: Level):
         self._level = p_level
+        self._pacman_frames: list[pygame.Surface] = []
+        self._assets_loaded: bool = False
+        self._bg_original: pygame.Surface | None = None
+        self._bg_scaled: pygame.Surface | None = None
 
     @property
     def _wall_width(self) -> int:
@@ -52,6 +56,11 @@ class Pygame:
         self._offset_x = (win_w - self._scale * cols) // 2
         self._offset_y = (win_h - self._scale * rows) // 2
 
+        if self._bg_original is not None:
+            self._bg_scaled = pygame.transform.smoothscale(
+                self._bg_original, (win_w, win_h)
+            )
+
     def show_view(self) -> None:
 
         pygame.init()
@@ -70,6 +79,9 @@ class Pygame:
         clock = pygame.time.Clock()
         running = True
 
+        self._load_assets()
+        self._update_layout(*screen.get_size())
+
         while running:
 
             for event in pygame.event.get():
@@ -85,7 +97,10 @@ class Pygame:
                 elif event.type == pygame.VIDEORESIZE:
                     self._update_layout(*screen.get_size())
 
-            screen.fill("white")
+            if self._bg_scaled is not None:
+                screen.blit(self._bg_scaled, (0, 0))
+            else:
+                screen.fill("white")
             clock.tick(60)
             self._paint_map(screen)
             self._draw_pacman(screen)
@@ -166,7 +181,7 @@ class Pygame:
 
         pygame.draw.circle(screen, "black", (circle_x, circle_y), radius)
 
-    def _draw_pacman(self, screen: pygame.Surface) -> None:
+    """ def _draw_pacman(self, screen: pygame.Surface) -> None:
 
         radius = self._pellet_radius * 3
         x, y = self._level.getPacman().getCoords()
@@ -179,24 +194,40 @@ class Pygame:
         circle_x = (source_x + target_x) / 2
         circle_y = (source_y + target_y) / 2
 
-        pygame.draw.circle(screen, "yellow", (circle_x, circle_y), radius)
+        pygame.draw.circle(screen, "yellow", (circle_x, circle_y), radius) """
+
+    def _draw_pacman(self, screen: pygame.Surface) -> None:
+
+        x, y = self._level.getPacman().getCoords()
+        source_x, source_y = self.world_to_screen(x, y)
+
+        if self._pacman_frames:
+            screen.blit(self._pacman_frames[0], (source_x, source_y))
+        else:
+            # Dibuja un círculo rojo temporal si entra aquí es que la imagen falló
+            pygame.draw.circle(screen, "yellow", (source_x + 20, source_y + 20), 15)
 
     def _draw_ghosts(self, screen: pygame.Surface) -> None:
-
-        radius = self._pellet_radius * 3
         for ghost in self._level.getGhosts():
             x, y = ghost.getCoords()
-            source = (x, y)
-            target = (x + 1, y + 1)
+            source_x, source_y = self.world_to_screen(x, y)
 
-            source_x, source_y = self.world_to_screen(*source)
-            target_x, target_y = self.world_to_screen(*target)
+            # Obtener el color del fantasma para saber qué sprite usar
+            color_enum = ghost.getColor()
+            color_name = getattr(color_enum, "name", "RED") # Asegura compatibilidad con tu clase Color
 
-            circle_x = (source_x + target_x) / 2
-            circle_y = (source_y + target_y) / 2
-
-            pygame.draw.circle(screen, ghost.getColor().value,
-                               (circle_x, circle_y), radius)
+            if hasattr(self, "_ghost_frames") and color_name in self._ghost_frames and self._ghost_frames[color_name]:
+                # Índice 2 por defecto (ej. mirando a la derecha). Puedes cambiarlo según la dirección del fantasma
+                frame = self._ghost_frames[color_name][2]
+                screen.blit(frame, (source_x, source_y))
+            else:
+                # Fallback al círculo original si falla la imagen
+                radius = self._pellet_radius * 3
+                target = (x + 1, y + 1)
+                target_x, target_y = self.world_to_screen(*target)
+                circle_x = (source_x + target_x) / 2
+                circle_y = (source_y + target_y) / 2
+                pygame.draw.circle(screen, ghost.getColor().value, (circle_x, circle_y), radius)
 
     def _draw_42(self, y: int, x: int, screen: pygame.Surface) -> None:
 
@@ -209,3 +240,58 @@ class Pygame:
         width = target_x - source_x
         height = target_y - source_y
         pygame.draw.rect(screen, "black", (source_x, source_y, width, height))
+
+    def _load_assets(self) -> None:
+        """Carga los sprites de Pac-Man y los fantasmas de forma segura."""
+        if self._assets_loaded:
+            return
+        
+        target_size = int(self._scale)
+        frame_w = 512
+        frame_h = 512
+
+        # 1. Cargar Pac-Man
+        try:
+            sheet_p = pygame.image.load("assets/pacman.png").convert_alpha()
+            sheet_p.set_colorkey((0, 0, 0))
+            self._pacman_frames = []
+            for i in range(3):
+                frame = pygame.Surface((frame_w, frame_h), pygame.SRCALPHA)
+                frame.blit(sheet_p, (0, 0), (i * frame_w, 0, frame_w, frame_h))
+                self._pacman_frames.append(pygame.transform.scale(frame, (target_size, target_size)))
+        except Exception as e:
+            print(f"Error cargando Pac-Man: {e}")
+            self._pacman_frames = []
+
+        # 2. Cargar Fantasmas (Blinky, Pinky, Inky, Clyde) con 4 frames (Arriba, Abajo, Derecha, Izquierda)
+        ghost_files = {
+            "RED": "assets/blinky.png",
+            "PINK": "assets/pinky.png",
+            "CYAN": "assets/inky.png",
+            "ORANGE": "assets/clyde.png"
+        }
+        
+        self._ghost_frames = {}
+        for color_name, path in ghost_files.items():
+            try:
+                sheet_g = pygame.image.load(path).convert_alpha()
+                sheet_g.set_colorkey((0, 0, 0))
+                frames = []
+                for i in range(4): # 4 direcciones
+                    frame = pygame.Surface((frame_w, frame_h), pygame.SRCALPHA)
+                    frame.blit(sheet_g, (0, 0), (i * frame_w, 0, frame_w, frame_h))
+                    frames.append(pygame.transform.scale(frame, (target_size, target_size)))
+                self._ghost_frames[color_name] = frames
+            except Exception as e:
+                print(f"Error cargando fantasma {color_name}: {e}")
+                self._ghost_frames[color_name] = []
+
+        # 3. Cargar fondo de pantalla
+        try:
+            self._bg_original = pygame.image.load(
+                "assets/background.png"
+            ).convert()
+        except Exception as e:
+            print(f"Error cargando fondo: {e}")
+            self._bg_original = None
+        self._assets_loaded = True
