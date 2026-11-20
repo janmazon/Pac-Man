@@ -62,7 +62,7 @@ class GameView:
 
         try:
             self._bg_original = pygame.image.load(
-                "assets/background.png"
+                "assets/game_background3.png"
             ).convert()
         except (pygame.error, FileNotFoundError) as e:
             print(f"Error loading background: {e}")
