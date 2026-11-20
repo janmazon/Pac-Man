@@ -1,7 +1,7 @@
 from .screen import Screen
 from .screen_manager import ScreenManager
 from src.models import Level
-from src.view import LevelView
+from src.view import GameView
 import pygame
 
 
@@ -10,7 +10,7 @@ class GameScreen(Screen):
     def __init__(self, manager: "ScreenManager", level: Level) -> None:
         super().__init__(manager)
         self._level = level
-        self._view = LevelView(level)
+        self._view = GameView(level)
 
     def on_enter(self) -> None:
         self._view.load_assets()          # necesita la ventana ya creada

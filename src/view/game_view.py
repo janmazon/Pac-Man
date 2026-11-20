@@ -3,7 +3,7 @@ from src.models.level import Level
 from src.models.cell import Cell
 
 
-class LevelView:
+class GameView:
     """Renders a level (maze, pellets, pacman, ghosts) on a surface."""
 
     _MARGIN: int = 40

@@ -1,4 +1,4 @@
-from .level_view import LevelView
+from .game_view import GameView
 from .main_menu_view import MainMenuView
 
-__all__ = ["LevelView", "MainMenuView"]
+__all__ = ["GameView", "MainMenuView"]
