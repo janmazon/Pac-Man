@@ -6,7 +6,7 @@ from src.models.cell import Cell
 class GameView:
     """Renders a level (maze, pellets, pacman, ghosts) on a surface."""
 
-    _MARGIN: int = 40
+    _MARGIN: int = 150
     _FRAME_SIZE: int = 512
 
     def __init__(self, p_level: Level) -> None:
