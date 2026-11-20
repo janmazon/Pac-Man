@@ -5,14 +5,6 @@ from .controller import App
 
 
 def main() -> None:
-
-    maze_gen = MazeGenerator()
-    maze_gen.generate()
-    seed = maze_gen._seed
-    level = Level(maze_gen.maze)
-    print(f"Seed={seed}")
-
-    level.print_info()
     """ cell = level.getMaze().getCell(0, 0)
     print("Muros del (0, 0):")
     cell.__str__()
@@ -28,7 +20,7 @@ def main() -> None:
     pygame = LevelView(level)
     pygame.show_view() """
 
-    App(level).run()
+    App().run()
 
 
 if __name__ == "__main__":

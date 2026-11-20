@@ -1,10 +1,10 @@
 import pygame
-from src.models.level import Level
 
 
 class MainMenuView:
 
-    def __init__(self) -> None:
+    def __init__(self, options: list[str]) -> None:
+        self._options = options
         self._bg_original: pygame.Surface | None = None
         self._bg_scaled: pygame.Surface | None = None
         self._size: tuple[int, int] = (0, 0)
@@ -31,15 +31,15 @@ class MainMenuView:
                 self._bg_original, (width, height)
             )
 
-    def draw(self, screen: pygame.Surface) -> None:
+    def draw(self, screen: pygame.Surface, selected: int) -> None:
         if self._bg_scaled is not None:
             screen.blit(self._bg_scaled, (0, 0))
         else:
             screen.fill("purple")
 
-        self._draw_menu(screen)
+        self._draw_menu(screen, selected)
 
-    def _draw_menu(self, screen: pygame.Surface) -> None:
+    def _draw_menu(self, screen: pygame.Surface, selected: int) -> None:
 
         w, h = self._size
         if self._title_font is None or self._option_font is None:
@@ -48,8 +48,8 @@ class MainMenuView:
         title = self._title_font.render("Pac-Man", True, "yellow")
         screen.blit(title, title.get_rect(center=(w // 2, h // 5)))
 
-        options = ["Start Game", "Highscores", "Instructions", "Exit"]
-        for i, label in enumerate(options):
-            surf = self._option_font.render(label, True, "white")
+        for i, label in enumerate(self._options):
+            color = "yellow" if i == selected else "white"
+            surf = self._option_font.render(label, True, color)
             y = h // 2 + i * (h // 10)
             screen.blit(surf, surf.get_rect(center=(w // 2, y)))

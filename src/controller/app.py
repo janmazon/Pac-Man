@@ -11,8 +11,7 @@ class App:
 
     _FPS: int = 60
 
-    def __init__(self, level: Level) -> None:
-        self._level = level
+    def __init__(self) -> None:
         self._running: bool = False
 
     def run(self) -> None:
