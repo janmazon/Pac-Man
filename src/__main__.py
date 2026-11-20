@@ -1,6 +1,7 @@
 from .models import Level
 from mazegenerator import MazeGenerator
-from .view import Pygame
+from .view import App
+# from .view import LevelView
 
 
 def main() -> None:
@@ -22,10 +23,12 @@ def main() -> None:
 
     cell = level.getMaze().getCell(0, 1)
     print("Muros del (0, 1):")
-    cell.__str__() """
+    cell.__str__()
 
-    pygame = Pygame(level)
-    pygame.show_view()
+    pygame = LevelView(level)
+    pygame.show_view() """
+
+    App(level).run()
 
 
 if __name__ == "__main__":

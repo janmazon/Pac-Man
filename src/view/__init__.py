@@ -1,3 +1,3 @@
-from .pygame import Pygame
+from .app import App
 
-__all__ = ["Pygame"]
+__all__ = ["App"]
