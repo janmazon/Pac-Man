@@ -24,6 +24,7 @@ class PauseScreen(Screen):
         self._selected: int = 0
 
     def on_enter(self) -> None:
+        self._view.load_assets()
         surface = pygame.display.get_surface()
         if surface is not None:
             self._view.resize(*surface.get_size())
