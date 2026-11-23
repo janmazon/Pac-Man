@@ -1,6 +1,7 @@
 import pygame
 from src.models.level import Level
-from src.models.cell import Cell
+from src.models.ghosts import Direction
+from src.models.cell import PelletType
 
 
 class GameView:
@@ -23,7 +24,13 @@ class GameView:
 
         self._bg_original: pygame.Surface | None = None
         self._bg_scaled: pygame.Surface | None = None
+        self._walls_surface: pygame.Surface | None = None
         self._assets_loaded: bool = False
+
+        self._pellet_src: pygame.Surface | None = None
+        self._superpellet_src: pygame.Surface | None = None
+        self._pellet_img: pygame.Surface | None = None
+        self._superpellet_img: pygame.Surface | None = None
 
     # ---------- helpers de escala ----------
 
@@ -49,7 +56,7 @@ class GameView:
         if self._assets_loaded:
             return
 
-        self._pacman_src = self._load_sheet("assets/pacman.png", 3)
+        self._pacman_src = self._load_sheet("assets/pacman.png", 4)
 
         ghost_files = {
             "RED": "assets/blinky.png",
@@ -62,11 +69,27 @@ class GameView:
 
         try:
             self._bg_original = pygame.image.load(
-                "assets/game_background2.png"
+                "assets/game_background.png"
             ).convert()
         except (pygame.error, FileNotFoundError) as e:
             print(f"Error loading background: {e}")
             self._bg_original = None
+
+        try:
+            self._pellet_src = pygame.image.load(
+                "assets/pellet.png"
+            ).convert_alpha()
+        except (pygame.error, FileNotFoundError) as e:
+            print(f"Error loading pellet: {e}")
+            self._pellet_src = None
+
+        try:
+            self._superpellet_src = pygame.image.load(
+                "assets/superpellet.png"
+            ).convert_alpha()
+        except (pygame.error, FileNotFoundError) as e:
+            print(f"Error loading superpellet: {e}")
+            self._superpellet_src = None
 
         self._assets_loaded = True
 
@@ -74,6 +97,7 @@ class GameView:
         """Recompute layout and rescale every cached image."""
         self._update_layout(win_w, win_h)
         self._rescale_assets(win_w, win_h)
+        self._build_walls_surface(win_w, win_h)
 
     def draw(self, screen: pygame.Surface) -> None:
         if self._bg_scaled is not None:
@@ -101,7 +125,8 @@ class GameView:
         return frames
 
     def _rescale_assets(self, win_w: int, win_h: int) -> None:
-        size = (self._scale, self._scale)
+        entity_px = max(1, int(self._scale * 0.7))
+        size = (entity_px, entity_px)
         self._pacman_frames = [
             pygame.transform.smoothscale(f, size) for f in self._pacman_src
         ]
@@ -112,6 +137,16 @@ class GameView:
         if self._bg_original is not None:
             self._bg_scaled = pygame.transform.smoothscale(
                 self._bg_original, (win_w, win_h)
+            )
+        if self._pellet_src is not None:
+            p_size = max(1, int(self._scale * 0.4))
+            self._pellet_img = pygame.transform.smoothscale(
+                self._pellet_src, (p_size, p_size)
+            )
+        if self._superpellet_src is not None:
+            sp_size = max(1, int(self._scale * 0.70))
+            self._superpellet_img = pygame.transform.smoothscale(
+                self._superpellet_src, (sp_size, sp_size)
             )
 
     # ---------- layout ----------
@@ -132,42 +167,46 @@ class GameView:
 
     def _draw_pacman(self, screen: pygame.Surface) -> None:
         x, y = self._level.getPacman().getCoords()
-        sx, sy = self.world_to_screen(x, y)
+        cx, cy = self.world_to_screen(x + 0.5, y + 0.5)
 
-        if self._pacman_frames:
-            screen.blit(self._pacman_frames[0], (sx, sy))
+        if len(self._pacman_frames) > 2:
+            frame = self._pacman_frames[2]
+            screen.blit(frame, frame.get_rect(center=(cx, cy)))
         else:
-            half = self._scale / 2
             pygame.draw.circle(
-                screen, "yellow", (sx + half, sy + half), self._scale * 0.4
+                screen, "yellow", (cx, cy), self._scale * 0.35
             )
 
     def _draw_ghosts(self, screen: pygame.Surface) -> None:
+        dir_index = {
+            Direction.UP: 0,
+            Direction.DOWN: 1,
+            Direction.LEFT: 2,
+            Direction.RIGHT: 3,
+        }
         for ghost in self._level.getGhosts():
             x, y = ghost.getCoords()
-            sx, sy = self.world_to_screen(x, y)
+            cx, cy = self.world_to_screen(x + 0.5, y + 0.5)
 
             color = ghost.getColor()
             frames = self._ghost_frames.get(color.name)
+            idx = dir_index[ghost.getDirection()]
 
-            if frames:
-                screen.blit(frames[2], (sx, sy))  # 2 = derecha, de momento
+            if frames and len(frames) > idx:
+                frame = frames[idx]
+                screen.blit(frame, frame.get_rect(center=(cx, cy)))
             else:
-                half = self._scale / 2
                 pygame.draw.circle(
-                    screen, color.value, (sx + half, sy + half),
-                    self._scale * 0.4,
+                    screen, color.value, (cx, cy), self._scale * 0.35
                 )
 
     # ---------- laberinto ----------
 
     def _draw_map(self, screen: pygame.Surface) -> None:
+        if self._walls_surface is not None:
+            screen.blit(self._walls_surface, (0, 0))
+
         maze_map = self._level.getMaze()._map
-
-        # Dibujamos todas las paredes de una sola vez
-        self._draw_walls(screen, maze_map)
-
-        # Dibujamos pellets y las celdas 42
         for y in range(len(maze_map)):
             for x in range(len(maze_map[y])):
                 if not maze_map[y][x]._is_42:
@@ -197,30 +236,20 @@ class GameView:
         pygame.draw.circle(surface, (255, 170, 30), start, radius)
         pygame.draw.circle(surface, (255, 170, 30), end, radius)
 
-    def _draw_walls(self, screen: pygame.Surface,
-                    maze_map: list[list[Cell]]) -> None:
-        """Draw all maze walls with a soft lava glow."""
+    def _build_walls_surface(self, width: int, height: int) -> None:
+        """Pre-render all maze walls with a soft lava glow."""
+        maze_map = self._level.getMaze()._map
+        result = pygame.Surface((width, height), pygame.SRCALPHA)
+        maze_surface = pygame.Surface((width, height), pygame.SRCALPHA)
+        glow_surface = pygame.Surface((width, height), pygame.SRCALPHA)
 
-        width, height = screen.get_size()
-
-        maze_surface = pygame.Surface(
-            (width, height), pygame.SRCALPHA
-        )
-
-        glow_surface = pygame.Surface(
-            (width, height), pygame.SRCALPHA
-        )
-
-        # Recorremos el mapa y dibujamos las paredes en ambas superficies
         for y in range(len(maze_map)):
             for x in range(len(maze_map[y])):
                 cell = maze_map[y][x]
-
                 if cell._is_42:
                     continue
 
                 walls = []
-
                 if cell._E == 1:
                     walls.append(((x + 1, y), (x + 1, y + 1)))
                 if cell._W == 1:
@@ -231,80 +260,62 @@ class GameView:
                     walls.append(((x, y + 1), (x + 1, y + 1)))
 
                 for source, target in walls:
+                    self._draw_wall(maze_surface, source, target)
 
-                    # Pared nítida
-                    self._draw_wall(
-                        maze_surface, source, target
-                    )
-
-                    # Halo más ancho
                     start = self.world_to_screen(*source)
                     end = self.world_to_screen(*target)
-
                     glow_width = self._wall_width * 4
                     glow_radius = max(1, glow_width // 2)
 
                     pygame.draw.line(
-                        glow_surface,
-                        (255, 100, 0, 90),
-                        start,
-                        end,
-                        glow_width
+                        glow_surface, (255, 100, 0, 90),
+                        start, end, glow_width
                     )
-
                     pygame.draw.circle(
-                        glow_surface,
-                        (255, 100, 0, 90),
-                        start,
-                        glow_radius
+                        glow_surface, (255, 100, 0, 90), start, glow_radius
                     )
-
                     pygame.draw.circle(
-                        glow_surface,
-                        (255, 100, 0, 90),
-                        end,
-                        glow_radius
+                        glow_surface, (255, 100, 0, 90), end, glow_radius
                     )
 
-        # Aproximamos el difuminado
-        small_size = (
-            max(1, width // 6),
-            max(1, height // 6)
-        )
-
-        glow_small = pygame.transform.smoothscale(
-            glow_surface, small_size
-        )
-
+        small_size = (max(1, width // 6), max(1, height // 6))
+        glow_small = pygame.transform.smoothscale(glow_surface, small_size)
         glow_blurred = pygame.transform.smoothscale(
             glow_small, (width, height)
         )
 
-        # Halo
-        screen.blit(glow_blurred, (0, 0))
-
-        # Paredes nítidas
-        screen.blit(maze_surface, (0, 0))
-
-    def _draw_maze(self, y: int, x: int, screen: pygame.Surface,
-                   maze_map: list[list[Cell]]) -> None:
-        cell = maze_map[y][x]
-
-        if cell._E == 1:
-            self._draw_wall(screen, (x + 1, y), (x + 1, y + 1))
-        if cell._W == 1:
-            self._draw_wall(screen, (x, y), (x, y + 1))
-        if cell._N == 1:
-            self._draw_wall(screen, (x, y), (x + 1, y))
-        if cell._S == 1:
-            self._draw_wall(screen, (x, y + 1), (x + 1, y + 1))
+        result.blit(glow_blurred, (0, 0))
+        result.blit(maze_surface, (0, 0))
+        self._walls_surface = result
 
     def _draw_pellets(self, y: int, x: int, screen: pygame.Surface) -> None:
+        pellet = self._level.getMaze().getCell(x, y).getPellet()
+        if pellet == PelletType.NONE:
+            return
+
+        if pellet == PelletType.SUPER and any(
+            ghost.getCoords() == (x, y)
+            for ghost in self._level.getGhosts()
+        ):
+            return
+
         pellet_x, pellet_y = self.world_to_screen(x + 0.5, y + 0.5)
-        pygame.draw.circle(
-            screen, "white", (pellet_x, pellet_y),
-            self._pellet_radius)
+        img = (
+            self._superpellet_img
+            if pellet == PelletType.SUPER
+            else self._pellet_img
+        )
+
+        if img is not None:
+            screen.blit(img, img.get_rect(center=(pellet_x, pellet_y)))
+        else:
+            radius = (
+                self._pellet_radius * 2
+                if pellet == PelletType.SUPER
+                else self._pellet_radius
+            )
+            pygame.draw.circle(screen, "white", (pellet_x, pellet_y), radius)
 
     def _draw_42(self, y: int, x: int, screen: pygame.Surface) -> None:
         sx, sy = self.world_to_screen(x, y)
-        pygame.draw.rect(screen, "black", (sx, sy, self._scale, self._scale))
+        pygame.draw.rect(screen, "orange", (sx, sy, self._scale, self._scale))

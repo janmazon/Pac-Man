@@ -28,6 +28,13 @@ class Color(Enum):
     BLUE = "blue"
 
 
+class Direction(Enum):
+    UP = "up"
+    DOWN = "down"
+    LEFT = "left"
+    RIGHT = "right"
+
+
 class Ghost(ABC):
 
     _coords: tuple[int, int]
@@ -36,6 +43,7 @@ class Ghost(ABC):
     _status: Status
     _color: Color
     _personality: Personality
+    _direction: Direction
 
     def __init__(self, p_coords: tuple[int, int]) -> None:
 
@@ -43,14 +51,19 @@ class Ghost(ABC):
         self._respawn_point = p_coords
         self._edible = False
         self._status = Status.START
+        self._direction = Direction.RIGHT
 
     def getCoords(self) -> tuple[int, int]:
-
         return self._coords
 
     def getColor(self) -> Color:
-
         return self._color
+
+    def getDirection(self) -> Direction:
+        return self._direction
+
+    def setDirection(self, p_direction: Direction) -> None:
+        self._direction = p_direction
 
     @abstractmethod
     def chase_pacman(self) -> None:

@@ -9,7 +9,7 @@ class PauseOptions(Enum):
     CONTINUE = "Continue"
     CHEATS = "Cheats"
     MAIN_MENU = "Main Menu"
-    EXIT = "Exit"
+    EXIT = "Exit Game"
 
 
 class PauseScreen(Screen):
