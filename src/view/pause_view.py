@@ -3,12 +3,18 @@ import pygame
 
 class PauseView:
 
+    _FRAME_SIZE: int = 512
+
     def __init__(self, options: list[str]) -> None:
         self._options = options
         self._size: tuple[int, int] = (0, 0)
         self._overlay: pygame.Surface | None = None
         self._title_font: pygame.font.Font | None = None
         self._option_font: pygame.font.Font | None = None
+        self._pacman_src: list[pygame.Surface] = []
+        self._scale: int = 40
+
+        self._assets_loaded: bool = False
 
         self._paused_src: pygame.Surface | None = None
         self._paused_img: pygame.Surface | None = None
@@ -27,6 +33,8 @@ class PauseView:
             print(f"Error loading paused banner: {e}")
             self._paused_src = None
 
+        self._pacman_src = self._load_sheet("assets/pacman.png", 4)
+
         self._assets_loaded = True
 
     def resize(self, width: int, height: int) -> None:
@@ -36,6 +44,7 @@ class PauseView:
         self._overlay.fill((0, 0, 0, 150))
         self._title_font = pygame.font.Font(None, height // 8)
         self._option_font = pygame.font.Font(None, height // 16)
+        self._rescale_assets()
 
         if self._paused_src is not None:
             orig_w, orig_h = self._paused_src.get_size()
@@ -74,4 +83,42 @@ class PauseView:
             color = "yellow" if i == selected else "white"
             surf = self._option_font.render(label, True, color)
             y = h // 2 + i * (h // 10)
-            screen.blit(surf, surf.get_rect(center=(w // 2, y)))
+            rect = surf.get_rect(center=(w // 2, y))
+            screen.blit(surf, rect)
+
+            if i == selected:
+                gap = rect.height // 2
+                if self._pacman_frames:
+                    sprite = self._pacman_frames[3]
+                    sprite_rect = sprite.get_rect(
+                        midright=(rect.left - gap, rect.centery)
+                    )
+                    screen.blit(sprite, sprite_rect)
+                else:
+                    radius = rect.height // 3
+                    pygame.draw.circle(
+                        screen, "yellow",
+                        (rect.left - gap - radius, rect.centery), radius
+                    )
+
+    # Para añadir la imagen de Pac-Man, borrar cuando AssetManager
+
+    def _rescale_assets(self) -> None:
+        size = (self._scale, self._scale)
+        self._pacman_frames = [
+            pygame.transform.smoothscale(f, size) for f in self._pacman_src
+        ]
+
+    def _load_sheet(self, path: str, n_frames: int) -> list[pygame.Surface]:
+        """Slice a horizontal sprite sheet into n_frames surfaces."""
+        frames: list[pygame.Surface] = []
+        size = self._FRAME_SIZE
+        try:
+            sheet = pygame.image.load(path).convert_alpha()
+            for i in range(n_frames):
+                frame = pygame.Surface((size, size), pygame.SRCALPHA)
+                frame.blit(sheet, (0, 0), (i * size, 0, size, size))
+                frames.append(frame)
+        except (pygame.error, FileNotFoundError) as e:
+            print(f"Error loading {path}: {e}")
+        return frames
