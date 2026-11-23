@@ -1,6 +1,6 @@
 from .maze import Maze
 from .pacman import PacMan
-from .ghosts import Ghost
+from .ghosts import Ghost, Direction
 from src.factories import GhostFactory
 
 
@@ -14,8 +14,8 @@ class Level():
 
     def __init__(self, mazegen: list[list[int]]) -> None:
         self._maze = Maze(mazegen)
-        self._initialize_ghosts()
         self._initialize_pacman()
+        self._initialize_ghosts()
         self._score = 0
         self._cheats = False
 
@@ -37,22 +37,28 @@ class Level():
     def setPacman(self, p_pacman: PacMan) -> None:
         self._pacman = p_pacman
 
-    def _initialize_ghosts(self) -> None:
-
-        col = self._maze.getWidth() - 1
-        row = self._maze.getHeight() - 1
-        self._ghosts = GhostFactory.create_all(col, row)
-        """ self._ghosts = []
-        self._ghosts.append(Blinky((0, 0)))
-        self._ghosts.append(Pinky((max_x, 0)))
-        self._ghosts.append(Inky((0, max_y)))
-        self._ghosts.append(Clyde((max_x, max_y))) """
-
     def _initialize_pacman(self) -> None:
 
         center_x = self._maze.getWidth() // 2
         center_y = self._maze.getHeight() // 2
         self._pacman = PacMan((center_x, center_y), 3)
+
+    def _initialize_ghosts(self) -> None:
+
+        col = self._maze.getWidth() - 1
+        row = self._maze.getHeight() - 1
+        self._ghosts = GhostFactory.create_all(col, row)
+        px, py = self._pacman.getCoords()
+
+        for ghost in self._ghosts:
+            gx, gy = ghost.getCoords()
+            dx = px - gx
+            dy = py - gy
+            if abs(dx) >= abs(dy):
+                direction = Direction.RIGHT if dx > 0 else Direction.LEFT
+            else:
+                direction = Direction.DOWN if dy > 0 else Direction.UP
+            ghost.setDirection(direction)
 
     # Test methods
 

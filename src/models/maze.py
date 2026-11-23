@@ -1,4 +1,4 @@
-from .cell import Cell
+from .cell import Cell, PelletType
 
 
 class Maze():
@@ -17,6 +17,28 @@ class Maze():
             self._width = len(mazegen[0])
         else:
             self._width = 0
+
+        self._place_special_pellets()
+
+    def _place_special_pellets(self) -> None:
+        if self._width == 0 or self._height == 0:
+            return
+
+        center = self.getCell(self._width // 2, self._height // 2)
+        center.setPellet(PelletType.NONE)
+
+        max_x = self._width - 1
+        max_y = self._height - 1
+        corners = [
+            (0, 0),
+            (max_x, 0),
+            (0, max_y),
+            (max_x, max_y),
+        ]
+        for x, y in corners:
+            cell = self.getCell(x, y)
+            if not cell._is_42:
+                cell.setPellet(PelletType.SUPER)
 
     def _create_cells(self, mazgen: list[list[int]]) -> None:
 

@@ -1,3 +1,13 @@
+from enum import Enum
+
+
+class PelletType(Enum):
+
+    NONE = "none"
+    NORMAL = "normal"
+    SUPER = "super"
+
+
 class Cell:
 
     _N: int
@@ -5,6 +15,7 @@ class Cell:
     _S: int
     _W: int
     _is_42: bool
+    _pellet: PelletType
 
     def __init__(self, p_value: int):
 
@@ -15,8 +26,16 @@ class Cell:
 
         if p_value == 15:
             self._is_42 = True
+            self._pellet = PelletType.NONE
         else:
             self._is_42 = False
+            self._pellet = PelletType.NORMAL
+
+    def getPellet(self) -> PelletType:
+        return self._pellet
+
+    def setPellet(self, p_pellet: PelletType) -> None:
+        self._pellet = p_pellet
 
     def __str__(self) -> str:
 
