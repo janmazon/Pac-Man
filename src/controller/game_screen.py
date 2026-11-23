@@ -3,6 +3,7 @@ from .screen_manager import ScreenManager
 from src.models import Level
 from src.view import GameView
 import pygame
+from .pause_screen import PauseScreen
 
 
 class GameScreen(Screen):
@@ -23,8 +24,7 @@ class GameScreen(Screen):
 
     def handle_event(self, event: pygame.event.Event) -> None:
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            # self._manager.push(PauseScreen(self._manager))
-            print("Game paused")
+            self._manager.push(PauseScreen(self._manager))
 
     def update(self, dt: float) -> None:
         pass  # lógica del juego con dt
