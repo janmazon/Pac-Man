@@ -62,7 +62,7 @@ class GameView:
 
         try:
             self._bg_original = pygame.image.load(
-                "assets/game_background3.png"
+                "assets/game_background2.png"
             ).convert()
         except (pygame.error, FileNotFoundError) as e:
             print(f"Error loading background: {e}")
@@ -164,24 +164,127 @@ class GameView:
     def _draw_map(self, screen: pygame.Surface) -> None:
         maze_map = self._level.getMaze()._map
 
+        # Dibujamos todas las paredes de una sola vez
+        self._draw_walls(screen, maze_map)
+
+        # Dibujamos pellets y las celdas 42
         for y in range(len(maze_map)):
             for x in range(len(maze_map[y])):
                 if not maze_map[y][x]._is_42:
-                    self._draw_maze(y, x, screen, maze_map)
                     self._draw_pellets(y, x, screen)
                 else:
                     self._draw_42(y, x, screen)
 
-    def _draw_wall(self, screen: pygame.Surface,
+    def _draw_wall(self, surface: pygame.Surface,
                    source: tuple[int, int],
                    target: tuple[int, int]) -> None:
-        """Draw one wall segment between two maze corner points."""
+        """Draw one wall segment."""
+
+        start = self.world_to_screen(*source)
+        end = self.world_to_screen(*target)
+
         pygame.draw.line(
-            screen, "orange",
-            self.world_to_screen(*source),
-            self.world_to_screen(*target),
-            self._wall_width,
+            surface,
+            (255, 170, 30),
+            start,
+            end,
+            self._wall_width
         )
+
+        # Redondeamos los extremos para conectar los segmentos
+        radius = max(1, self._wall_width // 2)
+
+        pygame.draw.circle(surface, (255, 170, 30), start, radius)
+        pygame.draw.circle(surface, (255, 170, 30), end, radius)
+
+    def _draw_walls(self, screen: pygame.Surface,
+                    maze_map: list[list[Cell]]) -> None:
+        """Draw all maze walls with a soft lava glow."""
+
+        width, height = screen.get_size()
+
+        maze_surface = pygame.Surface(
+            (width, height), pygame.SRCALPHA
+        )
+
+        glow_surface = pygame.Surface(
+            (width, height), pygame.SRCALPHA
+        )
+
+        # Recorremos el mapa y dibujamos las paredes en ambas superficies
+        for y in range(len(maze_map)):
+            for x in range(len(maze_map[y])):
+                cell = maze_map[y][x]
+
+                if cell._is_42:
+                    continue
+
+                walls = []
+
+                if cell._E == 1:
+                    walls.append(((x + 1, y), (x + 1, y + 1)))
+                if cell._W == 1:
+                    walls.append(((x, y), (x, y + 1)))
+                if cell._N == 1:
+                    walls.append(((x, y), (x + 1, y)))
+                if cell._S == 1:
+                    walls.append(((x, y + 1), (x + 1, y + 1)))
+
+                for source, target in walls:
+
+                    # Pared nítida
+                    self._draw_wall(
+                        maze_surface, source, target
+                    )
+
+                    # Halo más ancho
+                    start = self.world_to_screen(*source)
+                    end = self.world_to_screen(*target)
+
+                    glow_width = self._wall_width * 4
+                    glow_radius = max(1, glow_width // 2)
+
+                    pygame.draw.line(
+                        glow_surface,
+                        (255, 100, 0, 90),
+                        start,
+                        end,
+                        glow_width
+                    )
+
+                    pygame.draw.circle(
+                        glow_surface,
+                        (255, 100, 0, 90),
+                        start,
+                        glow_radius
+                    )
+
+                    pygame.draw.circle(
+                        glow_surface,
+                        (255, 100, 0, 90),
+                        end,
+                        glow_radius
+                    )
+
+        # Aproximamos el difuminado
+        small_size = (
+            max(1, width // 6),
+            max(1, height // 6)
+        )
+
+        glow_small = pygame.transform.smoothscale(
+            glow_surface, small_size
+        )
+
+        glow_blurred = pygame.transform.smoothscale(
+            glow_small, (width, height)
+        )
+
+        # Halo
+        screen.blit(glow_blurred, (0, 0))
+
+        # Paredes nítidas
+        screen.blit(maze_surface, (0, 0))
 
     def _draw_maze(self, y: int, x: int, screen: pygame.Surface,
                    maze_map: list[list[Cell]]) -> None:
