@@ -9,12 +9,14 @@ class PauseOptions(Enum):
     CONTINUE = "Continue"
     CHEATS = "Cheats"
     MAIN_MENU = "Main Menu"
+    EXIT = "Exit"
 
 
 class PauseScreen(Screen):
 
     _OPTIONS: list[PauseOptions] = [
-        PauseOptions.CONTINUE, PauseOptions.CHEATS, PauseOptions.MAIN_MENU]
+        PauseOptions.CONTINUE, PauseOptions.CHEATS, PauseOptions.MAIN_MENU,
+        PauseOptions.EXIT]
 
     def __init__(self, manager: "ScreenManager") -> None:
         super().__init__(manager)
@@ -70,6 +72,8 @@ class PauseScreen(Screen):
         elif option == PauseOptions.MAIN_MENU:
             menu = MainMenuScreen(self._manager)
             self._manager.switch(menu)
+        elif option == PauseOptions.EXIT:
+            pygame.event.post(pygame.event.Event(pygame.QUIT))
 
     def draw(self, surface: pygame.Surface) -> None:
         self._view.draw(surface, self._selected)

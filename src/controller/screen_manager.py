@@ -1,12 +1,15 @@
 from .screen import Screen
 import pygame
+from src.models import Highscore
 
 
 class ScreenManager:
     """Keeps a stack of screens; only the top one receives input/updates."""
+    _highscores: list[Highscore]
 
-    def __init__(self) -> None:
+    def __init__(self, highscores: list[Highscore]) -> None:
         self._stack: list[Screen] = []
+        self._highscores = highscores
 
     def push(self, screen: Screen) -> None:
         """Put a screen on top (e.g. pause over the game)."""

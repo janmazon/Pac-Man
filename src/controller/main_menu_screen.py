@@ -6,6 +6,7 @@ from enum import Enum
 from mazegenerator import MazeGenerator
 from src.models import Level
 from .game_screen import GameScreen
+from .highscores_screen import HighscoresScreen
 
 
 class MainOptions(Enum):
@@ -75,8 +76,7 @@ class MainMenuScreen(Screen):
             print(f"Seed={seed}")
             self._manager.switch(GameScreen(self._manager, level))
         elif option == MainOptions.HIGHSCORES:
-            ...  # self._manager.push(HighscoresScreen(self._manager))
-            print("Highscores Selected")
+            self._manager.push(HighscoresScreen(self._manager))
         elif option == MainOptions.INSTRUCTIONS:
             ...  # self._manager.push(InstructionsScreen(self._manager))
             print("Instructions Selected")

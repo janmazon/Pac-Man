@@ -2,6 +2,7 @@ import pygame
 
 from .screen_manager import ScreenManager
 from .main_menu_screen import MainMenuScreen
+from src.models import Highscore
 
 
 class App:
@@ -12,7 +13,7 @@ class App:
     def __init__(self) -> None:
         self._running: bool = False
 
-    def run(self) -> None:
+    def run(self, highscores: list[Highscore]) -> None:
         pygame.init()
         try:
             info = pygame.display.Info()
@@ -21,7 +22,7 @@ class App:
             pygame.display.set_caption("Pac-Man")
             clock = pygame.time.Clock()
 
-            manager = ScreenManager()
+            manager = ScreenManager(highscores)
             manager.switch(MainMenuScreen(manager))
 
             self._running = True
