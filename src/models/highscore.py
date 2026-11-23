@@ -9,6 +9,6 @@ class Highscore(BaseModel):
     def validate_values(self) -> "Highscore":
         if not self.name:
             raise ValueError("Highscore name can not be empty")
-        if not self.score:
-            raise ValueError("Highscore score can not be empty")
+        if self.score < 0:
+            raise ValueError("Highscore score can not be negative")
         return self

@@ -46,7 +46,7 @@ class HighscoreView:
         if self._title_font is None or self._option_font is None:
             return
 
-        title = self._title_font.render("Pac-Man", True, "yellow")
+        title = self._title_font.render("Highscores", True, "yellow")
         screen.blit(title, title.get_rect(center=(w // 2, h // 5)))
 
         for i, label in enumerate(self._highscores):
