@@ -170,7 +170,7 @@ class GameView:
         cx, cy = self.world_to_screen(x + 0.5, y + 0.5)
 
         if len(self._pacman_frames) > 2:
-            frame = self._pacman_frames[2]
+            frame = self._pacman_frames[3]
             screen.blit(frame, frame.get_rect(center=(cx, cy)))
         else:
             pygame.draw.circle(

@@ -33,6 +33,8 @@ class PauseView:
             print(f"Error loading paused banner: {e}")
             self._paused_src = None
 
+        self._pacman_src = self._load_sheet("assets/pacman.png", 4)
+
         self._assets_loaded = True
 
     def resize(self, width: int, height: int) -> None:
@@ -87,7 +89,7 @@ class PauseView:
             if i == selected:
                 gap = rect.height // 2
                 if self._pacman_frames:
-                    sprite = self._pacman_frames[0]
+                    sprite = self._pacman_frames[3]
                     sprite_rect = sprite.get_rect(
                         midright=(rect.left - gap, rect.centery)
                     )
@@ -120,10 +122,3 @@ class PauseView:
         except (pygame.error, FileNotFoundError) as e:
             print(f"Error loading {path}: {e}")
         return frames
-
-    def load_assets(self) -> None:
-        """Load sprites and background from disk (once)."""
-        if self._assets_loaded:
-            return
-
-        self._pacman_src = self._load_sheet("assets/pacman.png", 3)
