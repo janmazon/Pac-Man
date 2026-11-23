@@ -1,7 +1,8 @@
-from .models import Level
-from mazegenerator import MazeGenerator
 from .controller import App
-# from .view import LevelView
+from typing import Any
+import json
+from .models import Highscore
+from pydantic import ValidationError
 
 
 def main() -> None:
@@ -20,7 +21,28 @@ def main() -> None:
     pygame = LevelView(level)
     pygame.show_view() """
 
-    App().run()
+    # Todo esto hay que parsear en una clase o algo, de momento es para hacerlo rapido
+
+    path = "data/highscores.json"
+    try:
+        with open(path, encoding="UTF-8") as file:
+            data: list[dict[str, Any]] = json.load(file)
+    except FileNotFoundError as e:
+        print(f"FileNotFoundError: {e}")
+    except json.JSONDecodeError as e:
+        print(f"JSONDecodeError: {e}")
+
+    highscores: list[Highscore] = []
+    for index, item in enumerate(data):
+        try:
+            highscores.append(Highscore.model_validate(item))
+        except ValidationError as e:
+            print(f"Validarion error: {e}")
+
+    highscores.sort(key=lambda h: h.score, reverse=True)
+    print(f"Highscores={highscores}")
+    print("Hola")
+    App().run(highscores)
 
 
 if __name__ == "__main__":

@@ -45,5 +45,4 @@ class GameScreen(Screen):
         self._respawn_timer -= dt """
 
     def draw(self, surface: pygame.Surface) -> None:
-        print("Prueba")
         self._view.draw(surface)
