@@ -15,7 +15,7 @@ class MainMenuView:
         """Load menu images (needs the display to be created)."""
         try:
             self._bg_original = pygame.image.load(
-                "assets/menu_wallpaper.png"
+                "assets/background.png"
             ).convert()
         except (pygame.error, FileNotFoundError) as e:
             print(f"Error loading menu background: {e}")
