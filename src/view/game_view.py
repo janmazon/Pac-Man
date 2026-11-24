@@ -11,13 +11,17 @@ class GameView:
     _MARGIN_X_RATIO: float = 0.12
     _MARGIN_Y_RATIO: float = 0.18
 
+    _HUD_LIVES: int = 0
+    _HUD_TIME: int = 1
+    _HUD_LEVEL: int = 2
+    _HUD_SCORE: int = 3
+
     def __init__(self, p_level: Level) -> None:
         self._level = p_level
         self._scale: int = 40
         self._offset_x: int = 0
         self._offset_y: int = 0
 
-        # frames originales (512x512) y escalados al tamaño actual
         self._pacman_src: list[pygame.Surface] = []
         self._ghost_src: dict[str, list[pygame.Surface]] = {}
         self._pacman_frames: list[pygame.Surface] = []
@@ -32,6 +36,13 @@ class GameView:
         self._superpellet_src: pygame.Surface | None = None
         self._pellet_img: pygame.Surface | None = None
         self._superpellet_img: pygame.Surface | None = None
+
+        self._hud_src: list[pygame.Surface] = []
+        self._hud_icons: list[pygame.Surface] = []
+        self._hud_font: pygame.font.Font | None = None
+        self._hud_y: int = 10
+        self._hud_frame_src: pygame.Surface | None = None
+        self._hud_frame_img: pygame.Surface | None = None
 
     # ---------- helpers de escala ----------
 
@@ -58,6 +69,11 @@ class GameView:
             return
 
         self._pacman_src = AssetManager.get_sheet("assets/pacman.png", 4)
+
+        self._hud_src = AssetManager.get_sheet("assets/hud_icons.png", 4)
+
+        self._hud_frame_src = AssetManager.get_image(
+            "assets/hud_frame.png", alpha=True)
 
         ghost_files = {
             "RED": "assets/blinky.png",
@@ -86,7 +102,8 @@ class GameView:
         self._rescale_assets(win_w, win_h)
         self._build_walls_surface(win_w, win_h)
 
-    def draw(self, screen: pygame.Surface) -> None:
+    def draw(self, screen: pygame.Surface,
+             elapsed_seconds: float = 0.0, level_num: int = 1) -> None:
         if self._bg_scaled is not None:
             screen.blit(self._bg_scaled, (0, 0))
         else:
@@ -94,6 +111,7 @@ class GameView:
         self._draw_map(screen)
         self._draw_pacman(screen)
         self._draw_ghosts(screen)
+        self._draw_hud(screen, elapsed_seconds, level_num)
 
     # ---------- assets ----------
 
@@ -109,18 +127,32 @@ class GameView:
         }
         if self._bg_original is not None:
             self._bg_scaled = pygame.transform.smoothscale(
-                self._bg_original, (win_w, win_h)
-            )
+                self._bg_original, (win_w, win_h))
         if self._pellet_src is not None:
             p_size = max(1, int(self._scale * 0.4))
             self._pellet_img = pygame.transform.smoothscale(
-                self._pellet_src, (p_size, p_size)
-            )
+                self._pellet_src, (p_size, p_size))
         if self._superpellet_src is not None:
             sp_size = max(1, int(self._scale * 0.70))
             self._superpellet_img = pygame.transform.smoothscale(
-                self._superpellet_src, (sp_size, sp_size)
-            )
+                self._superpellet_src, (sp_size, sp_size))
+        frame_h = max(28, int(win_h * 0.088))
+        max_frame_w = int(win_w * 0.175)
+        frame_w = min(int(frame_h * 2.35), max_frame_w)
+        frame_h = int(frame_w / 2.35)
+
+        if self._hud_frame_src is not None:
+            self._hud_frame_img = pygame.transform.smoothscale(
+                self._hud_frame_src, (frame_w, frame_h))
+
+        icon_size = max(14, int(frame_h * 0.34))
+        self._hud_icons = [
+            pygame.transform.smoothscale(f, (icon_size, icon_size))
+            for f in self._hud_src
+        ]
+        font_size = max(16, int(frame_h * 0.38))
+        self._hud_font = pygame.font.Font(None, font_size)
+        self._hud_font.set_bold(True)
 
     # ---------- layout ----------
 
@@ -135,6 +167,8 @@ class GameView:
         self._scale = max(1, min(avail_w // cols, avail_h // rows))
         self._offset_x = (win_w - self._scale * cols) // 2
         self._offset_y = (win_h - self._scale * rows) // 2
+
+        self._hud_y = max(12, int(win_h * 0.070))
 
     # ---------- entidades ----------
 
@@ -292,3 +326,50 @@ class GameView:
     def _draw_42(self, y: int, x: int, screen: pygame.Surface) -> None:
         sx, sy = self.world_to_screen(x, y)
         pygame.draw.rect(screen, "orange", (sx, sy, self._scale, self._scale))
+
+    def _draw_hud(self, screen: pygame.Surface,
+                  elapsed_seconds: float, level_num: int) -> None:
+        if self._hud_font is None or len(self._hud_icons) < 4:
+            return
+
+        lives = self._level.getPacman().getLives()
+        score = self._level.getScore()
+        minutes, seconds = divmod(int(elapsed_seconds), 60)
+
+        items: list[tuple[int, str]] = [
+            (self._HUD_LIVES, f"x{lives}"),
+            (self._HUD_TIME, f"{minutes:02d}:{seconds:02d}"),
+            (self._HUD_LEVEL, f"LVL {level_num}"),
+            (self._HUD_SCORE, f"{score:05d}"),
+        ]
+
+        hud_margin = int(self._offset_x * 0.55)
+        hud_w = screen.get_width() - 2 * hud_margin
+        slot_w = hud_w // len(items)
+
+        for index, (icon_idx, label) in enumerate(items):
+            icon = self._hud_icons[icon_idx]
+            text_surf = self._hud_font.render(label, True, (255, 225, 130))
+            shadow_surf = self._hud_font.render(label, True, (25, 10, 35))
+
+            slot_center_x = hud_margin + index * slot_w + slot_w // 2
+            content_y = self._hud_y
+
+            if self._hud_frame_img is not None:
+                frame_rect = self._hud_frame_img.get_rect(
+                    center=(slot_center_x, self._hud_y)
+                )
+                screen.blit(self._hud_frame_img, frame_rect)
+                content_y = self._hud_y + int(frame_rect.height * 0.06)
+
+            gap = max(4, icon.get_width() // 4)
+            content_w = icon.get_width() + gap + text_surf.get_width()
+            start_x = slot_center_x - content_w // 2
+
+            icon_rect = icon.get_rect(midleft=(start_x, content_y))
+            text_rect = text_surf.get_rect(
+                midleft=(icon_rect.right + gap, content_y)
+            )
+            screen.blit(icon, icon_rect)
+            screen.blit(shadow_surf, text_rect.move(2, 2))
+            screen.blit(text_surf, text_rect)
