@@ -1,5 +1,6 @@
 import pygame
 from src.models import Highscore
+from src.utils import AssetManager
 
 
 class HighscoreView:
@@ -21,21 +22,10 @@ class HighscoreView:
         if self._assets_loaded:
             return
 
-        try:
-            self._bg_original = pygame.image.load(
-                "assets/background.png"
-            ).convert()
-        except (pygame.error, FileNotFoundError) as e:
-            print(f"Error loading menu background: {e}")
-            self._bg_original = None
-
-        try:
-            self._title_src = pygame.image.load(
-                "assets/highscores.png"
-            ).convert_alpha()
-        except (pygame.error, FileNotFoundError) as e:
-            print(f"Error loading highscores title: {e}")
-            self._title_src = None
+        self._bg_original = AssetManager.get_image(
+            "assets/background.png", alpha=False)
+        self._title_src = AssetManager.get_image(
+            "assets/highscores.png", alpha=True)
 
         self._assets_loaded = True
 

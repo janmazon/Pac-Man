@@ -2,13 +2,14 @@ import pygame
 from src.models.level import Level
 from src.models.ghosts import Direction
 from src.models.cell import PelletType
+from src.utils import AssetManager
 
 
 class GameView:
     """Renders a level (maze, pellets, pacman, ghosts) on a surface."""
 
-    _MARGIN: int = 150
-    _FRAME_SIZE: int = 512
+    _MARGIN_X_RATIO: float = 0.12
+    _MARGIN_Y_RATIO: float = 0.18
 
     def __init__(self, p_level: Level) -> None:
         self._level = p_level
@@ -56,7 +57,7 @@ class GameView:
         if self._assets_loaded:
             return
 
-        self._pacman_src = self._load_sheet("assets/pacman.png", 4)
+        self._pacman_src = AssetManager.get_sheet("assets/pacman.png", 4)
 
         ghost_files = {
             "RED": "assets/blinky.png",
@@ -64,32 +65,18 @@ class GameView:
             "CYAN": "assets/inky.png",
             "ORANGE": "assets/clyde.png",
         }
+
         for color_name, path in ghost_files.items():
-            self._ghost_src[color_name] = self._load_sheet(path, 4)
+            self._ghost_src[color_name] = AssetManager.get_sheet(path, 4)
 
-        try:
-            self._bg_original = pygame.image.load(
-                "assets/game_background.png"
-            ).convert()
-        except (pygame.error, FileNotFoundError) as e:
-            print(f"Error loading background: {e}")
-            self._bg_original = None
+        self._bg_original = AssetManager.get_image(
+            "assets/game_background.png", alpha=False)
 
-        try:
-            self._pellet_src = pygame.image.load(
-                "assets/pellet.png"
-            ).convert_alpha()
-        except (pygame.error, FileNotFoundError) as e:
-            print(f"Error loading pellet: {e}")
-            self._pellet_src = None
+        self._pellet_src = AssetManager.get_image(
+            "assets/pellet.png", alpha=True)
 
-        try:
-            self._superpellet_src = pygame.image.load(
-                "assets/superpellet.png"
-            ).convert_alpha()
-        except (pygame.error, FileNotFoundError) as e:
-            print(f"Error loading superpellet: {e}")
-            self._superpellet_src = None
+        self._superpellet_src = AssetManager.get_image(
+            "assets/superpellet.png", alpha=True)
 
         self._assets_loaded = True
 
@@ -109,20 +96,6 @@ class GameView:
         self._draw_ghosts(screen)
 
     # ---------- assets ----------
-
-    def _load_sheet(self, path: str, n_frames: int) -> list[pygame.Surface]:
-        """Slice a horizontal sprite sheet into n_frames surfaces."""
-        frames: list[pygame.Surface] = []
-        size = self._FRAME_SIZE
-        try:
-            sheet = pygame.image.load(path).convert_alpha()
-            for i in range(n_frames):
-                frame = pygame.Surface((size, size), pygame.SRCALPHA)
-                frame.blit(sheet, (0, 0), (i * size, 0, size, size))
-                frames.append(frame)
-        except (pygame.error, FileNotFoundError) as e:
-            print(f"Error loading {path}: {e}")
-        return frames
 
     def _rescale_assets(self, win_w: int, win_h: int) -> None:
         entity_px = max(1, int(self._scale * 0.7))
@@ -156,8 +129,8 @@ class GameView:
         rows = len(maze_map)
         cols = len(maze_map[0])
 
-        avail_w = win_w - 2 * self._MARGIN
-        avail_h = win_h - 2 * self._MARGIN
+        avail_w = win_w - 2 * int(win_w * self._MARGIN_X_RATIO)
+        avail_h = win_h - 2 * int(win_h * self._MARGIN_Y_RATIO)
 
         self._scale = max(1, min(avail_w // cols, avail_h // rows))
         self._offset_x = (win_w - self._scale * cols) // 2

@@ -1,9 +1,8 @@
 import pygame
+from src.utils import AssetManager
 
 
 class PauseView:
-
-    _FRAME_SIZE: int = 512
 
     def __init__(self, options: list[str]) -> None:
         self._options = options
@@ -12,28 +11,21 @@ class PauseView:
         self._title_font: pygame.font.Font | None = None
         self._option_font: pygame.font.Font | None = None
         self._pacman_src: list[pygame.Surface] = []
+        self._pacman_frames: list[pygame.Surface] = []
         self._scale: int = 40
 
         self._assets_loaded: bool = False
 
         self._paused_src: pygame.Surface | None = None
         self._paused_img: pygame.Surface | None = None
-        self._assets_loaded: bool = False
 
     def load_assets(self) -> None:
         """Load pause banner and menu icons from disk (once)."""
         if self._assets_loaded:
             return
 
-        try:
-            self._paused_src = pygame.image.load(
-                "assets/paused.png"
-            ).convert_alpha()
-        except (pygame.error, FileNotFoundError) as e:
-            print(f"Error loading paused banner: {e}")
-            self._paused_src = None
-
-        self._pacman_src = self._load_sheet("assets/pacman.png", 4)
+        self._paused_src = AssetManager.get_image("assets/paused.png")
+        self._pacman_src = AssetManager.get_sheet("assets/pacman.png", 4)
 
         self._assets_loaded = True
 
@@ -108,17 +100,3 @@ class PauseView:
         self._pacman_frames = [
             pygame.transform.smoothscale(f, size) for f in self._pacman_src
         ]
-
-    def _load_sheet(self, path: str, n_frames: int) -> list[pygame.Surface]:
-        """Slice a horizontal sprite sheet into n_frames surfaces."""
-        frames: list[pygame.Surface] = []
-        size = self._FRAME_SIZE
-        try:
-            sheet = pygame.image.load(path).convert_alpha()
-            for i in range(n_frames):
-                frame = pygame.Surface((size, size), pygame.SRCALPHA)
-                frame.blit(sheet, (0, 0), (i * size, 0, size, size))
-                frames.append(frame)
-        except (pygame.error, FileNotFoundError) as e:
-            print(f"Error loading {path}: {e}")
-        return frames
