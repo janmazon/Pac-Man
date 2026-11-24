@@ -43,3 +43,27 @@ class AssetManager:
         except (pygame.error, FileNotFoundError) as e:
             print(f"Error loading {path}: {e}")
             sys.exit(1)
+
+    @classmethod
+    def preload_all(cls) -> None:
+        images: list[tuple[str, bool]] = [
+            ("assets/background.png", False),
+            ("assets/game_background.png", False),
+            ("assets/title.png", True),
+            ("assets/highscores.png", True),
+            ("assets/paused.png", True),
+            ("assets/pellet.png", True),
+            ("assets/superpellet.png", True),
+        ]
+        for path, alpha in images:
+            cls.get_image(path, alpha)
+
+        sheets: list[tuple[str, int]] = [
+            ("assets/pacman.png", 4),
+            ("assets/blinky.png", 4),
+            ("assets/pinky.png", 4),
+            ("assets/inky.png", 4),
+            ("assets/clyde.png", 4),
+        ]
+        for path, n_frames in sheets:
+            cls.get_sheet(path, n_frames)
