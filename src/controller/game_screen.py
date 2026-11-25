@@ -31,16 +31,18 @@ class GameScreen(Screen):
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_UP or event.key == pygame.K_w:
-                self._pacman.move(Directions.NORTH, self._level)
+                self._pacman.setNextDirection(Directions.NORTH)
             elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
-                self._pacman.move(Directions.SOUTH, self._level)
+                self._pacman.setNextDirection(Directions.SOUTH)
             elif event.key == pygame.K_LEFT or event.key == pygame.K_a:
-                self._pacman.move(Directions.WEST, self._level)
+                self._pacman.setNextDirection(Directions.WEST)
             elif event.key == pygame.K_RIGHT or event.key == pygame.K_d:
-                self._pacman.move(Directions.EAST, self._level)
+                self._pacman.setNextDirection(Directions.EAST)
 
     def update(self, dt: float) -> None:
         self._time = max(0.0, self._time - dt)
+
+        self._pacman.update(dt, self._level)
 
         # Ejemplos de la logica
 
