@@ -1,4 +1,5 @@
 from enum import Enum
+from .pacman import Directions
 
 
 class PelletType(Enum):
@@ -36,6 +37,22 @@ class Cell:
 
     def setPellet(self, p_pellet: PelletType) -> None:
         self._pellet = p_pellet
+
+    def has_wall(self, direction: Directions) -> bool:
+
+        match direction:
+
+            case Directions.NORTH:
+                return self._N == 1
+
+            case Directions.EAST:
+                return self._E == 1
+
+            case Directions.SOUTH:
+                return self._S == 1
+
+            case Directions.WEST:
+                return self._W == 1
 
     def __str__(self) -> str:
 
