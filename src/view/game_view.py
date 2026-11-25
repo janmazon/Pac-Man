@@ -175,7 +175,7 @@ class GameView:
 
     def _draw_pacman(self, screen: pygame.Surface) -> None:
         pacman = self._level.getPacman()
-        x, y = pacman.getCoords()
+        x, y = pacman.getVisualCoords()
         cx, cy = self.world_to_screen(x + 0.5, y + 0.5)
 
         if len(self._pacman_frames) > 2:
@@ -199,7 +199,7 @@ class GameView:
                 frame = pygame.transform.rotate(frame, 90)
 
             case Directions.WEST:
-                frame = pygame.transform.rotate(frame, 180)
+                frame = pygame.transform.flip(frame, True, False)
 
             case Directions.SOUTH:
                 frame = pygame.transform.rotate(frame, 270)
