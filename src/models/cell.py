@@ -37,6 +37,22 @@ class Cell:
     def setPellet(self, p_pellet: PelletType) -> None:
         self._pellet = p_pellet
 
+    def has_wall(self, direction: str) -> bool:
+
+        match direction:
+
+            case "NORTH":
+                return self._N == 1
+
+            case "EAST":
+                return self._E == 1
+
+            case "SOUTH":
+                return self._S == 1
+
+            case "WEST":
+                return self._W == 1
+
     def __str__(self) -> str:
 
         return (f"W={self._W}-S={self._S}-E={self._E}-N={self._N}")

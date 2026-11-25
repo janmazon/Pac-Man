@@ -12,6 +12,7 @@ class GameScreen(Screen):
         super().__init__(manager)
         self._level = level
         self._view = GameView(level)
+        self._pacman = level.getPacman()
 
     def on_enter(self) -> None:
         self._view.load_assets()          # necesita la ventana ya creada
@@ -25,6 +26,16 @@ class GameScreen(Screen):
     def handle_event(self, event: pygame.event.Event) -> None:
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             self._manager.push(PauseScreen(self._manager))
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP:
+                self._pacman.move("NORTH", self._level)
+            elif event.key == pygame.K_DOWN:
+                self._pacman.move("SOUTH", self._level)
+            elif event.key == pygame.K_LEFT:
+                self._pacman.move("WEST", self._level)
+            elif event.key == pygame.K_RIGHT:
+                self._pacman.move("EAST", self._level)
 
     def update(self, dt: float) -> None:
         pass  # lógica del juego con dt
