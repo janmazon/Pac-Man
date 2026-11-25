@@ -23,6 +23,32 @@ class PacMan():
     def getLives(self) -> int:
         return self._lives
 
+    def move(self, direction: str, level: "Level") -> None:
+        from .level import Level
+
+        x, y = self._coords
+
+        cell = level.getMaze().getCell(x, y)
+        if not cell.has_wall(direction):
+
+            match direction:
+
+                case "NORTH":
+                    if y-1 >= 0:
+                        self._coords = (x, y-1)
+
+                case "EAST":
+                    if x+1 >= 0:
+                        self._coords = (x+1, y)
+
+                case "SOUTH":
+                    if y+1 >= 0:
+                        self._coords = (x, y+1)
+
+                case "WEST":
+                    if x-1 >= 0:
+                        self._coords = (x-1, y)
+
     # Test methods
 
     def print_info(self) -> None:
