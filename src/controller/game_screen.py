@@ -12,6 +12,7 @@ class GameScreen(Screen):
         super().__init__(manager)
         self._level = level
         self._view = GameView(level)
+        self._time: float = 300.0
 
     def on_enter(self) -> None:
         self._view.load_assets()          # necesita la ventana ya creada
@@ -27,7 +28,7 @@ class GameScreen(Screen):
             self._manager.push(PauseScreen(self._manager))
 
     def update(self, dt: float) -> None:
-        pass  # lógica del juego con dt
+        self._time = max(0.0, self._time - dt)
 
         # Ejemplos de la logica
 
@@ -45,4 +46,4 @@ class GameScreen(Screen):
         self._respawn_timer -= dt """
 
     def draw(self, surface: pygame.Surface) -> None:
-        self._view.draw(surface)
+        self._view.draw(surface, self._time)
