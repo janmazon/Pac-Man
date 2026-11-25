@@ -3,6 +3,7 @@ from src.models.level import Level
 from src.models.ghosts import Direction
 from src.models.cell import PelletType
 from src.utils import AssetManager
+from src.models import Directions, PacMan
 
 
 class GameView:
@@ -173,16 +174,37 @@ class GameView:
     # ---------- entidades ----------
 
     def _draw_pacman(self, screen: pygame.Surface) -> None:
-        x, y = self._level.getPacman().getCoords()
+        pacman = self._level.getPacman()
+        x, y = pacman.getCoords()
         cx, cy = self.world_to_screen(x + 0.5, y + 0.5)
 
         if len(self._pacman_frames) > 2:
             frame = self._pacman_frames[3]
+            frame = self._rotatePacman(pacman, frame)
             screen.blit(frame, frame.get_rect(center=(cx, cy)))
         else:
             pygame.draw.circle(
                 screen, "yellow", (cx, cy), self._scale * 0.35
             )
+
+    def _rotatePacman(
+            self, pacman: PacMan, frame: pygame.Surface) -> pygame.Surface:
+
+        match pacman.getFacing():
+
+            case Directions.EAST:
+                frame = pygame.transform.rotate(frame, 0)
+
+            case Directions.NORTH:
+                frame = pygame.transform.rotate(frame, 90)
+
+            case Directions.WEST:
+                frame = pygame.transform.rotate(frame, 180)
+
+            case Directions.SOUTH:
+                frame = pygame.transform.rotate(frame, 270)
+
+        return frame
 
     def _draw_ghosts(self, screen: pygame.Surface) -> None:
         dir_index = {

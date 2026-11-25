@@ -35,10 +35,14 @@ class PacMan():
     def getLives(self) -> int:
         return self._lives
 
+    def getFacing(self) -> Directions:
+        return self._facing
+
     def move(self, direction: Directions, level: "Level") -> None:
         from .level import Level
 
         x, y = self._coords
+        self._facing = direction
 
         cell = level.getMaze().getCell(x, y)
         if not cell.has_wall(direction):
@@ -48,22 +52,18 @@ class PacMan():
                 case Directions.NORTH:
                     if y-1 >= 0:
                         self._coords = (x, y-1)
-                        self._facing = Directions.NORTH
 
                 case Directions.EAST:
                     if x+1 >= 0:
                         self._coords = (x+1, y)
-                        self._facing = Directions.EAST
 
                 case Directions.SOUTH:
                     if y+1 >= 0:
                         self._coords = (x, y+1)
-                        self._facing = Directions.SOUTH
 
                 case Directions.WEST:
                     if x-1 >= 0:
                         self._coords = (x-1, y)
-                        self._facing = Directions.WEST
 
     # Test methods
 
