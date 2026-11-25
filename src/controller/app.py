@@ -3,6 +3,7 @@ import pygame
 from .screen_manager import ScreenManager
 from .main_menu_screen import MainMenuScreen
 from src.models import Highscore
+from src.utils import AssetManager
 
 
 class App:
@@ -20,6 +21,7 @@ class App:
             size = (info.current_w * 2 // 3, info.current_h * 2 // 3)
             screen = pygame.display.set_mode(size, pygame.RESIZABLE)
             pygame.display.set_caption("Pac-Man")
+            AssetManager.preload_all()
             clock = pygame.time.Clock()
 
             manager = ScreenManager(highscores)

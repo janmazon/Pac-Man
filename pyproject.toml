@@ -7,7 +7,7 @@ authors = [
     { name = "jcamarer", email = "jcamarer@student.42urduliz.com" },
     { name = "aeiros-t", email = "aeiros-t@student.42urduliz.com" }
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.10,<3.14"
 
 dependencies = [
     "pydantic>=2.13.5",

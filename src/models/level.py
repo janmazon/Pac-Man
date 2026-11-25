@@ -37,6 +37,9 @@ class Level():
     def setPacman(self, p_pacman: PacMan) -> None:
         self._pacman = p_pacman
 
+    def getScore(self) -> int:
+        return self._score
+
     def _initialize_pacman(self) -> None:
 
         center_x = self._maze.getWidth() // 2

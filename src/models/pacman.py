@@ -18,8 +18,10 @@ class PacMan():
         self._speed = 1.0
 
     def getCoords(self) -> tuple[int, int]:
-
         return self._coords
+
+    def getLives(self) -> int:
+        return self._lives
 
     # Test methods
 
