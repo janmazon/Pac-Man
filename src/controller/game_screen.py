@@ -4,6 +4,7 @@ from src.models import Level
 from src.view import GameView
 import pygame
 from .pause_screen import PauseScreen
+from src.models import Directions
 
 
 class GameScreen(Screen):
@@ -29,14 +30,14 @@ class GameScreen(Screen):
             self._manager.push(PauseScreen(self._manager))
 
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_UP:
-                self._pacman.move("NORTH", self._level)
-            elif event.key == pygame.K_DOWN:
-                self._pacman.move("SOUTH", self._level)
-            elif event.key == pygame.K_LEFT:
-                self._pacman.move("WEST", self._level)
-            elif event.key == pygame.K_RIGHT:
-                self._pacman.move("EAST", self._level)
+            if event.key == pygame.K_UP or event.key == pygame.K_w:
+                self._pacman.move(Directions.NORTH, self._level)
+            elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
+                self._pacman.move(Directions.SOUTH, self._level)
+            elif event.key == pygame.K_LEFT or event.key == pygame.K_a:
+                self._pacman.move(Directions.WEST, self._level)
+            elif event.key == pygame.K_RIGHT or event.key == pygame.K_d:
+                self._pacman.move(Directions.EAST, self._level)
 
     def update(self, dt: float) -> None:
         self._time = max(0.0, self._time - dt)
