@@ -2,10 +2,15 @@ from enum import Enum
 
 
 class Directions(Enum):
-    NORTH = "north"
-    EAST = "east"
-    SOUTH = "south"
-    WEST = "west"
+    NORTH = (0, - 1)
+    EAST = (1, 0)
+    SOUTH = (0, 1)
+    WEST = (-1, 0)
+
+    @property
+    def oposite(self) -> "Directions":
+        dx, dy = self.value
+        return Directions((-dx, -dy))
 
 
 class PacMan():
@@ -50,7 +55,7 @@ class PacMan():
     def setNextDirection(self, direction: Directions) -> None:
         self._next_direction = direction
 
-    def move(self, direction: Directions, level: "Level") -> None:
+    def _move(self, direction: Directions, level: "Level") -> bool:
         from .level import Level
 
         x, y = self._coords
@@ -59,44 +64,39 @@ class PacMan():
         cell = level.getMaze().getCell(x, y)
         if not cell.has_wall(direction):
 
-            match direction:
-
-                case Directions.NORTH:
-                    if y-1 >= 0:
-                        self._coords = (x, y-1)
-
-                case Directions.EAST:
-                    if x+1 >= 0:
-                        self._coords = (x+1, y)
-
-                case Directions.SOUTH:
-                    if y+1 >= 0:
-                        self._coords = (x, y+1)
-
-                case Directions.WEST:
-                    if x-1 >= 0:
-                        self._coords = (x-1, y)
-
+            dx, dy = direction.value
+            self._coords = (x + dx, y + dy)
             self._prev_coords = (x, y)
+            return True
+
+        return False
 
     def update(self, dt: float, level: "Level") -> None:
         from .level import Level
 
         if self._move_progress < 1.0:
 
-            if (self._move_progress + self._speed * dt) >= 1.0:
+            if self._next_direction == self._facing.oposite:
+                x, y = self._coords
+                self._coords = self._prev_coords
+                self._prev_coords = (x, y)
+                self._move_progress = 1.0 - self._move_progress
+                self._facing = self._next_direction
+
+            self._move_progress += self._speed * dt
+            if self._move_progress >= 1.0:
                 self._move_progress = 1.0
                 self._prev_coords = self._coords
-            else:
-                self._move_progress += self._speed * dt
 
-        elif self._move_progress >= 1.0:
+        if self._move_progress >= 1.0:
+            rest = self._move_progress - 1.0
             x, y = self._coords
-            cell = level.getMaze().getCell(x, y)
-            if not cell.has_wall(self._next_direction):
-                self.move(self._facing, level)
-                self._move_progress = 0.0
-                self._facing = self._next_direction
+            self._facing = self._next_direction
+            if self._move(self._facing, level):
+                self._move_progress = min(rest, 0.99)
+            else:
+                self._move_progress = 1.0
+                self._prev_coords = self._coords
 
     def getVisualCoords(self, ) -> tuple[float, float]:
 
