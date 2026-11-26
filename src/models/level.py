@@ -2,6 +2,7 @@ from .maze import Maze
 from .pacman import PacMan
 from .ghosts import Ghost, Direction
 from src.factories import GhostFactory
+from .cell import PelletType
 
 
 class Level():
@@ -12,12 +13,16 @@ class Level():
     _score: int
     _cheats: bool
 
-    def __init__(self, mazegen: list[list[int]]) -> None:
+    def __init__(self, mazegen: list[list[int]],
+                 points_pellet: int = 10, points_super: int = 50) -> None:
         self._maze = Maze(mazegen)
         self._initialize_pacman()
         self._initialize_ghosts()
         self._score = 0
         self._cheats = False
+        self._points_pellet = points_pellet
+        self._points_super = points_super
+        self._frightened_timer: float = 0.0
 
     def getMaze(self) -> Maze:
         return self._maze
@@ -62,6 +67,28 @@ class Level():
             else:
                 direction = Direction.DOWN if dy > 0 else Direction.UP
             ghost.setDirection(direction)
+
+    def consume_pellet(self, coords: tuple[int, int]) -> None:
+
+        x, y = coords
+        cell = self._maze.getCell(x, y)
+        pellet = cell.getPellet()
+
+        if pellet == PelletType.NORMAL:
+            cell.setPellet(PelletType.NONE)
+            self._score += self._points_pellet
+        elif pellet == PelletType.SUPER:
+            cell.setPellet(PelletType.NONE)
+            self._score += self._points_super
+            self._frightened_timer = 7.0
+
+    def has_remaining_pellets(self) -> bool:
+
+        for y in range(self._maze.getHeight()):
+            for x in range(self._maze.getWidth()):
+                if self._maze.getCell(x, y).getPellet() != PelletType.NONE:
+                    return True
+        return False
 
     # Test methods
 

@@ -91,8 +91,8 @@ class PacMan():
                 self._prev_coords = self._coords
 
         if self._move_progress >= 1.0:
+            level.consume_pellet(self._coords)
             rest = self._move_progress - 1.0
-            x, y = self._coords
             self._facing = self._next_direction
             if self._move(self._facing, level):
                 self._move_progress = min(rest, 0.99)
