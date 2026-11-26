@@ -45,6 +45,7 @@ class GameView:
         self._hud_frame_src: pygame.Surface | None = None
         self._hud_frame_img: pygame.Surface | None = None
 
+        self._ready_overlay: pygame.Surface | None = None
         self._ready_src: pygame.Surface | None = None
         self._ready_img: pygame.Surface | None = None
 
@@ -111,7 +112,7 @@ class GameView:
         self._build_walls_surface(win_w, win_h)
 
     def draw(self, screen: pygame.Surface, elapsed_seconds: float = 0.0,
-             level_num: int = 1, started: bool = True) -> None:
+             level_num: int = 1, show_ready: bool = True) -> None:
 
         if self._bg_scaled is not None:
             screen.blit(self._bg_scaled, (0, 0))
@@ -123,10 +124,14 @@ class GameView:
         self._draw_ghosts(screen)
         self._draw_hud(screen, elapsed_seconds, level_num)
 
-        if not started and self._ready_img is not None:
-            center = (screen.get_width() // 2, screen.get_height() // 2)
-            screen.blit(self._ready_img,
-                        self._ready_img.get_rect(center=center))
+        if show_ready:
+            if self._ready_overlay is not None:
+                screen.blit(self._ready_overlay, (0, 0))
+            if self._ready_img is not None:
+                center = (screen.get_width() // 2, screen.get_height() // 2)
+                screen.blit(
+                    self._ready_img,
+                    self._ready_img.get_rect(center=center))
 
     # ---------- assets ----------
 
@@ -167,9 +172,12 @@ class GameView:
             self._hud_frame_img = pygame.transform.smoothscale(
                 self._hud_frame_src, (frame_w, frame_h))
 
+        self._ready_overlay = pygame.Surface((win_w, win_h), pygame.SRCALPHA)
+        self._ready_overlay.fill((0, 0, 0, 150))
+
         if self._ready_src is not None:
             orig_w, orig_h = self._ready_src.get_size()
-            target_h = max(1, int(win_h * 0.14))
+            target_h = max(1, int(win_h * 0.28))
             target_w = max(1, int(target_h * (orig_w / orig_h)))
             self._ready_img = pygame.transform.smoothscale(
                 self._ready_src, (target_w, target_h))

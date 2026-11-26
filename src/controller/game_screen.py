@@ -18,6 +18,7 @@ class GameScreen(Screen):
         self._time: float = 300.0
         self._level_num: int = 1
         self._max_levels: int = 5
+        self._ready_timer: float = 3.0
         self._started: bool = False
 
     def on_enter(self) -> None:
@@ -33,7 +34,7 @@ class GameScreen(Screen):
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             self._manager.push(PauseScreen(self._manager))
 
-        if event.type == pygame.KEYDOWN:
+        if event.type == pygame.KEYDOWN and self._ready_timer <= 0.0:
             if event.key == pygame.K_UP or event.key == pygame.K_w:
                 self._pacman.setNextDirection(Directions.NORTH)
                 self._started = True
@@ -48,6 +49,10 @@ class GameScreen(Screen):
                 self._started = True
 
     def update(self, dt: float) -> None:
+
+        if self._ready_timer > 0.0:
+            self._ready_timer = max(0.0, self._ready_timer - dt)
+            return
 
         if not self._started:
             return
@@ -95,7 +100,9 @@ class GameScreen(Screen):
         self._view = GameView(self._level)
         self.on_enter()
         self._time = 300.0
+        self._ready_timer = 3.0
         self._started = False
 
     def draw(self, surface: pygame.Surface) -> None:
-        self._view.draw(surface, self._time, self._level_num, self._started)
+        self._view.draw(surface, self._time, self._level_num,
+                        self._ready_timer > 0.0)
