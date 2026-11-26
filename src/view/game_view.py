@@ -215,14 +215,14 @@ class GameView:
         x, y = pacman.getVisualCoords()
         cx, cy = self.world_to_screen(x + 0.5, y + 0.5)
 
-        if len(self._pacman_frames) > 2:
-            frame = self._pacman_frames[3]
+        idx = pacman.getPacManFrame()
+        if len(self._pacman_frames) > idx:
+            frame = self._pacman_frames[idx]
             frame = self._rotatePacman(pacman, frame)
             screen.blit(frame, frame.get_rect(center=(cx, cy)))
         else:
             pygame.draw.circle(
-                screen, "yellow", (cx, cy), self._scale * 0.35
-            )
+                screen, "yellow", (cx, cy), self._scale * 0.35)
 
     def _rotatePacman(
             self, pacman: PacMan, frame: pygame.Surface) -> pygame.Surface:

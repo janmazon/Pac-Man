@@ -11,6 +11,7 @@ from mazegenerator import MazeGenerator
 class GameScreen(Screen):
 
     def __init__(self, manager: "ScreenManager", level: Level) -> None:
+
         super().__init__(manager)
         self._level = level
         self._view = GameView(level)
@@ -18,12 +19,14 @@ class GameScreen(Screen):
         self._time: float = 300.0
         self._level_num: int = 1
         self._max_levels: int = 5
-        self._ready_timer: float = 3.0
+        self._ready_timer: float = 1.0
         self._started: bool = False
 
     def on_enter(self) -> None:
+
         self._view.load_assets()          # necesita la ventana ya creada
         surface = pygame.display.get_surface()
+
         if surface is not None:
             self._view.resize(*surface.get_size())
 
@@ -31,6 +34,7 @@ class GameScreen(Screen):
         self._view.resize(width, height)
 
     def handle_event(self, event: pygame.event.Event) -> None:
+
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             self._manager.push(PauseScreen(self._manager))
 
@@ -100,7 +104,7 @@ class GameScreen(Screen):
         self._view = GameView(self._level)
         self.on_enter()
         self._time = 300.0
-        self._ready_timer = 3.0
+        self._ready_timer = 1.0
         self._started = False
 
     def draw(self, surface: pygame.Surface) -> None:
