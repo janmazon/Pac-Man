@@ -69,8 +69,19 @@ class HighscoreView:
             title = self._title_font.render("Highscores", True, "yellow")
             screen.blit(title, title.get_rect(center=(w // 2, h // 5)))
 
-        for i, label in enumerate(self._highscores):
-            text = f"{i+1}. {label.name} - {label.score}"
+        for i in range(10):
+            if i < len(self._highscores):
+                entry = self._highscores[i]
+                text = f"{i + 1}. {entry.name} - {entry.score}"
+            else:
+                text = f"{i + 1}."
+
+            if i < 5:
+                x = int(w * 0.20)
+            else:
+                x = int(w * 0.56)
+
+            y = int(h * 0.44) + (i % 5) * int(h * 0.09)
+
             surf = self._option_font.render(text, True, "white")
-            y = h // 2 + i * (h // 10)
-            screen.blit(surf, surf.get_rect(center=(w // 2, y)))
+            screen.blit(surf, surf.get_rect(midleft=(x, y)))

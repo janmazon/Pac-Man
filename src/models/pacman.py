@@ -1,4 +1,8 @@
 from enum import Enum
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .level import Level
 
 
 class Directions(Enum):
@@ -56,7 +60,6 @@ class PacMan():
         self._next_direction = direction
 
     def _move(self, direction: Directions, level: "Level") -> bool:
-        from .level import Level
 
         x, y = self._coords
         self._facing = direction
@@ -72,7 +75,6 @@ class PacMan():
         return False
 
     def update(self, dt: float, level: "Level") -> None:
-        from .level import Level
 
         if self._move_progress < 1.0:
 
@@ -98,7 +100,7 @@ class PacMan():
                 self._move_progress = 1.0
                 self._prev_coords = self._coords
 
-    def getVisualCoords(self, ) -> tuple[float, float]:
+    def getVisualCoords(self) -> tuple[float, float]:
 
         prev_x, prev_y = self._prev_coords
         current_x, current_y = self._coords
