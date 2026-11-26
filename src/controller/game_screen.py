@@ -18,6 +18,7 @@ class GameScreen(Screen):
         self._time: float = 300.0
         self._level_num: int = 1
         self._max_levels: int = 5
+        self._started: bool = False
 
     def on_enter(self) -> None:
         self._view.load_assets()          # necesita la ventana ya creada
@@ -35,14 +36,21 @@ class GameScreen(Screen):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_UP or event.key == pygame.K_w:
                 self._pacman.setNextDirection(Directions.NORTH)
+                self._started = True
             elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
                 self._pacman.setNextDirection(Directions.SOUTH)
+                self._started = True
             elif event.key == pygame.K_LEFT or event.key == pygame.K_a:
                 self._pacman.setNextDirection(Directions.WEST)
+                self._started = True
             elif event.key == pygame.K_RIGHT or event.key == pygame.K_d:
                 self._pacman.setNextDirection(Directions.EAST)
+                self._started = True
 
     def update(self, dt: float) -> None:
+
+        if not self._started:
+            return
 
         self._time = max(0.0, self._time - dt)
         self._pacman.update(dt, self._level)
@@ -87,6 +95,7 @@ class GameScreen(Screen):
         self._view = GameView(self._level)
         self.on_enter()
         self._time = 300.0
+        self._started = False
 
     def draw(self, surface: pygame.Surface) -> None:
-        self._view.draw(surface, self._time, self._level_num)
+        self._view.draw(surface, self._time, self._level_num, self._started)

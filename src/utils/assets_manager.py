@@ -54,7 +54,8 @@ class AssetManager:
             ("assets/paused.png", True),
             ("assets/pellet.png", True),
             ("assets/superpellet.png", True),
-            ("assets/hud_frame.png", True)
+            ("assets/hud_frame.png", True),
+            ("assets/ready.png", True),
         ]
         for path, alpha in images:
             cls.get_image(path, alpha)
