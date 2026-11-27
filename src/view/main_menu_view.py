@@ -11,6 +11,9 @@ class MainMenuView:
         self._size: tuple[int, int] = (0, 0)
         self._title_font: pygame.font.Font | None = None
         self._option_font: pygame.font.Font | None = None
+        self._pacman_src: list[pygame.Surface] = []
+        self._pacman_frames: list[pygame.Surface] = []
+        self._scale: int = 40
 
         self._title_src: pygame.Surface | None = None
         self._title_img: pygame.Surface | None = None
@@ -27,6 +30,8 @@ class MainMenuView:
         self._title_src = AssetManager.get_image(
             "assets/title.png", alpha=True)
 
+        self._pacman_src = AssetManager.get_sheet("assets/pacman.png", 4)
+
         self._assets_loaded = True
 
     def resize(self, width: int, height: int) -> None:
@@ -35,6 +40,8 @@ class MainMenuView:
         self._size = (width, height)
         self._title_font = pygame.font.Font(None, height // 8)
         self._option_font = pygame.font.Font(None, height // 16)
+        self._scale = max(1, int(self._option_font.get_height() * 0.9))
+        self._rescale_assets()
         if self._bg_original is not None:
             self._bg_scaled = pygame.transform.smoothscale(
                 self._bg_original, (width, height))
@@ -73,4 +80,25 @@ class MainMenuView:
             color = "yellow" if i == selected else "white"
             surf = self._option_font.render(label, True, color)
             y = h // 2 + i * (h // 10)
-            screen.blit(surf, surf.get_rect(center=(w // 2, y)))
+            rect = surf.get_rect(center=(w // 2, y))
+            screen.blit(surf, rect)
+
+            if i == selected:
+                gap = rect.height // 2
+
+                if self._pacman_frames:
+                    sprite = self._pacman_frames[3]
+                    sprite_rect = sprite.get_rect(
+                        midright=(rect.left - gap, rect.centery))
+                    screen.blit(sprite, sprite_rect)
+                else:
+                    radius = rect.height // 3
+                    pygame.draw.circle(
+                        screen, "yellow",
+                        (rect.left - gap - radius, rect.centery), radius)
+
+    def _rescale_assets(self) -> None:
+        size = (self._scale, self._scale)
+        self._pacman_frames = [
+            pygame.transform.smoothscale(f, size) for f in self._pacman_src
+        ]

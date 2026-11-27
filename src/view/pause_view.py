@@ -95,8 +95,6 @@ class PauseView:
                         screen, "yellow",
                         (rect.left - gap - radius, rect.centery), radius)
 
-    # Para añadir la imagen de Pac-Man, borrar cuando AssetManager
-
     def _rescale_assets(self) -> None:
         size = (self._scale, self._scale)
         self._pacman_frames = [
