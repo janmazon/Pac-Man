@@ -1,4 +1,8 @@
 from enum import Enum
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .level import Level
 
 
 class Directions(Enum):
@@ -15,6 +19,9 @@ class Directions(Enum):
 
 class PacMan():
 
+    _PACMAN_SEQUENCE: tuple[int, ...] = (3, 2, 1, 0, 1, 2)
+    _FRAME_DURATION: float = 0.04
+
     _coords: tuple[int, int]
     _lives: int
     _respawn_point: tuple[int, int]
@@ -25,6 +32,8 @@ class PacMan():
     _prev_coords: tuple[int, int]
     _move_progress: float
     _next_direction: Directions
+    _is_moving: bool
+    _animation_timer: float
 
     def __init__(
             self, p_coords: tuple[int, int],
@@ -39,6 +48,8 @@ class PacMan():
         self._prev_coords = p_coords
         self._move_progress = 1.0
         self._next_direction = Directions.EAST
+        self._is_moving = False
+        self._animation_timer = 0.0
 
     def getCoords(self) -> tuple[int, int]:
         return self._coords
@@ -55,8 +66,11 @@ class PacMan():
     def setNextDirection(self, direction: Directions) -> None:
         self._next_direction = direction
 
+    def getPacManFrame(self) -> int:
+        step = int(self._animation_timer / self._FRAME_DURATION)
+        return self._PACMAN_SEQUENCE[step % len(self._PACMAN_SEQUENCE)]
+
     def _move(self, direction: Directions, level: "Level") -> bool:
-        from .level import Level
 
         x, y = self._coords
         self._facing = direction
@@ -72,9 +86,9 @@ class PacMan():
         return False
 
     def update(self, dt: float, level: "Level") -> None:
-        from .level import Level
 
         if self._move_progress < 1.0:
+            self._is_moving = True
 
             if self._next_direction == self._facing.oposite:
                 x, y = self._coords
@@ -89,16 +103,21 @@ class PacMan():
                 self._prev_coords = self._coords
 
         if self._move_progress >= 1.0:
+            level.consume_pellet(self._coords)
             rest = self._move_progress - 1.0
-            x, y = self._coords
             self._facing = self._next_direction
             if self._move(self._facing, level):
                 self._move_progress = min(rest, 0.99)
+                self._is_moving = True
             else:
                 self._move_progress = 1.0
                 self._prev_coords = self._coords
+                self._is_moving = False
 
-    def getVisualCoords(self, ) -> tuple[float, float]:
+        if self._is_moving:
+            self._animation_timer += dt
+
+    def getVisualCoords(self) -> tuple[float, float]:
 
         prev_x, prev_y = self._prev_coords
         current_x, current_y = self._coords

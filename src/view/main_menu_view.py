@@ -31,22 +31,23 @@ class MainMenuView:
 
     def resize(self, width: int, height: int) -> None:
         """Rescale cached images (and later fonts/layout) to the window."""
+
         self._size = (width, height)
         self._title_font = pygame.font.Font(None, height // 8)
         self._option_font = pygame.font.Font(None, height // 16)
         if self._bg_original is not None:
             self._bg_scaled = pygame.transform.smoothscale(
-                self._bg_original, (width, height)
-            )
+                self._bg_original, (width, height))
+
         if self._title_src is not None:
             orig_w, orig_h = self._title_src.get_size()
             target_h = max(1, int(height * 0.26))
             target_w = max(1, int(target_h * (orig_w / orig_h)))
             self._title_img = pygame.transform.smoothscale(
-                self._title_src, (target_w, target_h)
-            )
+                self._title_src, (target_w, target_h))
 
     def draw(self, screen: pygame.Surface, selected: int) -> None:
+
         if self._bg_scaled is not None:
             screen.blit(self._bg_scaled, (0, 0))
         else:
@@ -63,8 +64,7 @@ class MainMenuView:
         if self._title_img is not None:
             screen.blit(
                 self._title_img,
-                self._title_img.get_rect(center=(w // 2, h // 5)),
-            )
+                self._title_img.get_rect(center=(w // 2, h // 5)))
         else:
             title = self._title_font.render("Pac-Man", True, "yellow")
             screen.blit(title, title.get_rect(center=(w // 2, h // 5)))

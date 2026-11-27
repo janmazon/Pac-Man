@@ -45,6 +45,10 @@ class GameView:
         self._hud_frame_src: pygame.Surface | None = None
         self._hud_frame_img: pygame.Surface | None = None
 
+        self._ready_overlay: pygame.Surface | None = None
+        self._ready_src: pygame.Surface | None = None
+        self._ready_img: pygame.Surface | None = None
+
     # ---------- helpers de escala ----------
 
     @property
@@ -95,48 +99,70 @@ class GameView:
         self._superpellet_src = AssetManager.get_image(
             "assets/superpellet.png", alpha=True)
 
+        self._ready_src = AssetManager.get_image(
+            "assets/ready.png", alpha=True)
+
         self._assets_loaded = True
 
     def resize(self, win_w: int, win_h: int) -> None:
         """Recompute layout and rescale every cached image."""
+
         self._update_layout(win_w, win_h)
         self._rescale_assets(win_w, win_h)
         self._build_walls_surface(win_w, win_h)
 
-    def draw(self, screen: pygame.Surface,
-             elapsed_seconds: float = 0.0, level_num: int = 1) -> None:
+    def draw(self, screen: pygame.Surface, elapsed_seconds: float = 0.0,
+             level_num: int = 1, show_ready: bool = True) -> None:
+
         if self._bg_scaled is not None:
             screen.blit(self._bg_scaled, (0, 0))
         else:
             screen.fill("white")
+
         self._draw_map(screen)
         self._draw_pacman(screen)
         self._draw_ghosts(screen)
         self._draw_hud(screen, elapsed_seconds, level_num)
 
+        if show_ready:
+            if self._ready_overlay is not None:
+                screen.blit(self._ready_overlay, (0, 0))
+            if self._ready_img is not None:
+                center = (screen.get_width() // 2, screen.get_height() // 2)
+                screen.blit(
+                    self._ready_img,
+                    self._ready_img.get_rect(center=center))
+
     # ---------- assets ----------
 
     def _rescale_assets(self, win_w: int, win_h: int) -> None:
+
         entity_px = max(1, int(self._scale * 0.7))
         size = (entity_px, entity_px)
+
         self._pacman_frames = [
             pygame.transform.smoothscale(f, size) for f in self._pacman_src
         ]
+
         self._ghost_frames = {
             name: [pygame.transform.smoothscale(f, size) for f in frames]
             for name, frames in self._ghost_src.items()
         }
+
         if self._bg_original is not None:
             self._bg_scaled = pygame.transform.smoothscale(
                 self._bg_original, (win_w, win_h))
+
         if self._pellet_src is not None:
             p_size = max(1, int(self._scale * 0.4))
             self._pellet_img = pygame.transform.smoothscale(
                 self._pellet_src, (p_size, p_size))
+
         if self._superpellet_src is not None:
             sp_size = max(1, int(self._scale * 0.70))
             self._superpellet_img = pygame.transform.smoothscale(
                 self._superpellet_src, (sp_size, sp_size))
+
         frame_h = max(28, int(win_h * 0.088))
         max_frame_w = int(win_w * 0.175)
         frame_w = min(int(frame_h * 2.35), max_frame_w)
@@ -146,11 +172,22 @@ class GameView:
             self._hud_frame_img = pygame.transform.smoothscale(
                 self._hud_frame_src, (frame_w, frame_h))
 
+        self._ready_overlay = pygame.Surface((win_w, win_h), pygame.SRCALPHA)
+        self._ready_overlay.fill((0, 0, 0, 150))
+
+        if self._ready_src is not None:
+            orig_w, orig_h = self._ready_src.get_size()
+            target_h = max(1, int(win_h * 0.28))
+            target_w = max(1, int(target_h * (orig_w / orig_h)))
+            self._ready_img = pygame.transform.smoothscale(
+                self._ready_src, (target_w, target_h))
+
         icon_size = max(14, int(frame_h * 0.34))
         self._hud_icons = [
             pygame.transform.smoothscale(f, (icon_size, icon_size))
             for f in self._hud_src
         ]
+
         font_size = max(16, int(frame_h * 0.38))
         self._hud_font = pygame.font.Font(None, font_size)
         self._hud_font.set_bold(True)
@@ -178,14 +215,14 @@ class GameView:
         x, y = pacman.getVisualCoords()
         cx, cy = self.world_to_screen(x + 0.5, y + 0.5)
 
-        if len(self._pacman_frames) > 2:
-            frame = self._pacman_frames[3]
+        idx = pacman.getPacManFrame()
+        if len(self._pacman_frames) > idx:
+            frame = self._pacman_frames[idx]
             frame = self._rotatePacman(pacman, frame)
             screen.blit(frame, frame.get_rect(center=(cx, cy)))
         else:
             pygame.draw.circle(
-                screen, "yellow", (cx, cy), self._scale * 0.35
-            )
+                screen, "yellow", (cx, cy), self._scale * 0.35)
 
     def _rotatePacman(
             self, pacman: PacMan, frame: pygame.Surface) -> pygame.Surface:
