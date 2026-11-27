@@ -10,6 +10,8 @@ from mazegenerator import MazeGenerator
 
 class GameScreen(Screen):
 
+    _HIT_DELAY: float = 1.5
+
     def __init__(self, manager: "ScreenManager", level: Level) -> None:
 
         super().__init__(manager)
@@ -21,6 +23,7 @@ class GameScreen(Screen):
         self._max_levels: int = 5
         self._ready_timer: float = 1.0
         self._started: bool = False
+        self._hit_timer: float = 0.0
 
     def on_enter(self) -> None:
 
@@ -38,7 +41,8 @@ class GameScreen(Screen):
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             self._manager.push(PauseScreen(self._manager))
 
-        if event.type == pygame.KEYDOWN and self._ready_timer <= 0.0:
+        if (event.type == pygame.KEYDOWN and self._ready_timer <= 0.0
+                and self._hit_timer <= 0.0):
             if event.key == pygame.K_UP or event.key == pygame.K_w:
                 self._pacman.setNextDirection(Directions.NORTH)
                 self._started = True
@@ -58,11 +62,22 @@ class GameScreen(Screen):
             self._ready_timer = max(0.0, self._ready_timer - dt)
             return
 
+        if self._hit_timer > 0.0:
+            self._pacman.approach_collision(dt)
+            self._hit_timer -= dt
+            if self._hit_timer <= 0.0:
+                self._after_hit()
+            return                       # todo congelado mientras tanto
+
         if not self._started:
             return
 
         self._time = max(0.0, self._time - dt)
         self._pacman.update(dt, self._level)
+
+        if self._level.has_ghost(self._pacman.getCoords()):
+            self._on_ghost_hit()
+            return
 
         if not self._level.has_remaining_pellets():
             self._advance_level()
@@ -81,6 +96,17 @@ class GameScreen(Screen):
 
         # Respawn de un fantasma comido (5 o 10 s)
         self._respawn_timer -= dt """
+
+    def _on_ghost_hit(self) -> None:
+        self._pacman.lose_life()
+        self._hit_timer = self._HIT_DELAY
+
+    def _after_hit(self) -> None:
+        if self._pacman.getLives() <= 0:
+            self._game_over()
+            return
+        self._pacman.respawn()
+        # self._started = False            # espera a que el jugador pulse una tecla
 
     def _advance_level(self) -> None:
         from .main_menu_screen import MainMenuScreen
@@ -110,3 +136,8 @@ class GameScreen(Screen):
     def draw(self, surface: pygame.Surface) -> None:
         self._view.draw(surface, self._time, self._level_num,
                         self._ready_timer > 0.0)
+
+    def _game_over(self) -> None:
+        from .main_menu_screen import MainMenuScreen
+        print("Fin del Jogo Makina")
+        self._manager.switch(MainMenuScreen(self._manager))

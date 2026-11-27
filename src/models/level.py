@@ -82,6 +82,16 @@ class Level():
             self._score += self._points_super
             self._frightened_timer = 7.0
 
+    def has_ghost(self, coords: tuple[int, int]) -> bool:
+
+        collision: bool = False
+        for ghost in self._ghosts:
+            if ghost.getCoords() == coords:
+                collision = True
+                break
+
+        return collision
+
     def has_remaining_pellets(self) -> bool:
 
         for y in range(self._maze.getHeight()):

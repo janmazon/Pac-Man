@@ -70,6 +70,18 @@ class PacMan():
         step = int(self._animation_timer / self._FRAME_DURATION)
         return self._PACMAN_SEQUENCE[step % len(self._PACMAN_SEQUENCE)]
 
+    def lose_life(self) -> None:
+        self._lives = max(0, self._lives - 1)
+
+    def respawn(self) -> None:
+        """Return to the starting cell and stop."""
+        self._coords = self._respawn_point
+        self._prev_coords = self._respawn_point
+        self._move_progress = 1.0
+        self._is_moving = False
+        self._facing = Directions.EAST
+        self._next_direction = Directions.EAST
+
     def _move(self, direction: Directions, level: "Level") -> bool:
 
         x, y = self._coords
@@ -84,6 +96,12 @@ class PacMan():
             return True
 
         return False
+
+    def approach_collision(self, dt: float) -> None:
+        """Slide towards the halfway point instead of snapping to it."""
+        if self._move_progress < 0.5:
+            self._move_progress = min(
+                0.5, self._move_progress + self._speed * dt)
 
     def update(self, dt: float, level: "Level") -> None:
 
