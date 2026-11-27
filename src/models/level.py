@@ -100,6 +100,9 @@ class Level():
                     return True
         return False
 
+    def activate_cheats(self) -> None:
+        self._cheats = True
+
     # Test methods
 
     def print_info(self) -> None:

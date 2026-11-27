@@ -144,6 +144,18 @@ class PacMan():
 
         return (x, y)
 
+    def increase_lives(self) -> None:
+        self._lives += 1
+
+    def increase_speed(self) -> None:
+        self._speed += 1.0
+
+    def change_invincibility(self) -> None:
+        self._invincible = not self._invincible
+
+    def isInvincible(self) -> bool:
+        return self._invincible
+
     # Test methods
 
     def print_info(self) -> None:

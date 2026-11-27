@@ -6,6 +6,15 @@ import pygame
 from .pause_screen import PauseScreen
 from src.models import Directions
 from mazegenerator import MazeGenerator
+from enum import Enum
+
+
+class Cheats(Enum):
+    SKIP_LEVEL = "skip_level"
+    INVINCIBILITY = "invincibility"
+    GHOST_FREEZE = "ghos_freeze"
+    EXTRA_LIVES = "extra_lives"
+    INCREASE_SPEED = "increase_speed"
 
 
 class GameScreen(Screen):
@@ -47,7 +56,18 @@ class GameScreen(Screen):
             self._manager.push(PauseScreen(self._manager))
 
         if (event.type == pygame.KEYDOWN and can_move):
-            if event.key == pygame.K_UP or event.key == pygame.K_w:
+
+            if event.key == pygame.K_l:
+                self._activate_cheats(Cheats.SKIP_LEVEL)
+            elif event.key == pygame.K_u:
+                self._activate_cheats(Cheats.EXTRA_LIVES)
+            elif event.key == pygame.K_f:
+                self._activate_cheats(Cheats.GHOST_FREEZE)
+            elif event.key == pygame.K_i:
+                self._activate_cheats(Cheats.INVINCIBILITY)
+            elif event.key == pygame.K_p:
+                self._activate_cheats(Cheats.INCREASE_SPEED)
+            elif event.key == pygame.K_UP or event.key == pygame.K_w:
                 self._pacman.setNextDirection(Directions.NORTH)
                 self._started = True
             elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
@@ -59,6 +79,20 @@ class GameScreen(Screen):
             elif event.key == pygame.K_RIGHT or event.key == pygame.K_d:
                 self._pacman.setNextDirection(Directions.EAST)
                 self._started = True
+
+    def _activate_cheats(self, cheat: Cheats) -> None:
+
+        match cheat:
+            case Cheats.SKIP_LEVEL:
+                self._advance_level()
+            case Cheats.EXTRA_LIVES:
+                self._pacman.increase_lives()
+            case Cheats.GHOST_FREEZE:
+                print("TODO: Freeze Ghosts")
+            case Cheats.INCREASE_SPEED:
+                self._pacman.increase_speed()
+            case Cheats.INVINCIBILITY:
+                self._pacman.change_invincibility()
 
     def update(self, dt: float) -> None:
 
@@ -87,8 +121,9 @@ class GameScreen(Screen):
         self._pacman.update(dt, self._level)
 
         if self._level.has_ghost(self._pacman.getCoords()):
-            self._on_ghost_hit()
-            return
+            if not self._pacman.isInvincible():
+                self._on_ghost_hit()
+                return
 
         if not self._level.has_remaining_pellets():
             self._level_complete_timer = 2.0
@@ -117,7 +152,7 @@ class GameScreen(Screen):
             self._game_over()
             return
         self._pacman.respawn()
-        # self._started = False            # espera a que el jugador pulse una tecla
+        # self._started = False # espera a que el jugador pulse una tecla
 
     def _advance_level(self) -> None:
         from .main_menu_screen import MainMenuScreen
