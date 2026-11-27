@@ -48,6 +48,8 @@ class GameView:
         self._ready_overlay: pygame.Surface | None = None
         self._ready_src: pygame.Surface | None = None
         self._ready_img: pygame.Surface | None = None
+        self._level_complete_src: pygame.Surface | None = None
+        self._level_complete_img: pygame.Surface | None = None
 
     # ---------- helpers de escala ----------
 
@@ -102,6 +104,9 @@ class GameView:
         self._ready_src = AssetManager.get_image(
             "assets/ready.png", alpha=True)
 
+        self._level_complete_src = AssetManager.get_image(
+            "assets/level_complete.png", alpha=True)
+
         self._assets_loaded = True
 
     def resize(self, win_w: int, win_h: int) -> None:
@@ -112,7 +117,8 @@ class GameView:
         self._build_walls_surface(win_w, win_h)
 
     def draw(self, screen: pygame.Surface, elapsed_seconds: float = 0.0,
-             level_num: int = 1, show_ready: bool = True) -> None:
+             level_num: int = 1, show_ready: bool = True,
+             show_level_complete: bool = False) -> None:
 
         if self._bg_scaled is not None:
             screen.blit(self._bg_scaled, (0, 0))
@@ -124,14 +130,18 @@ class GameView:
         self._draw_ghosts(screen)
         self._draw_hud(screen, elapsed_seconds, level_num)
 
-        if show_ready:
+        banner: pygame.Surface | None = None
+        if show_level_complete:
+            banner = self._level_complete_img
+        elif show_ready:
+            banner = self._ready_img
+
+        if banner is not None:
             if self._ready_overlay is not None:
                 screen.blit(self._ready_overlay, (0, 0))
-            if self._ready_img is not None:
-                center = (screen.get_width() // 2, screen.get_height() // 2)
-                screen.blit(
-                    self._ready_img,
-                    self._ready_img.get_rect(center=center))
+
+            center = (screen.get_width() // 2, screen.get_height() // 2)
+            screen.blit(banner, banner.get_rect(center=center))
 
     # ---------- assets ----------
 
@@ -181,6 +191,13 @@ class GameView:
             target_w = max(1, int(target_h * (orig_w / orig_h)))
             self._ready_img = pygame.transform.smoothscale(
                 self._ready_src, (target_w, target_h))
+
+        if self._level_complete_src is not None:
+            orig_w, orig_h = self._level_complete_src.get_size()
+            target_h = max(1, int(win_h * 0.28))
+            target_w = max(1, int(target_h * (orig_w / orig_h)))
+            self._level_complete_img = pygame.transform.smoothscale(
+                self._level_complete_src, (target_w, target_h))
 
         icon_size = max(14, int(frame_h * 0.34))
         self._hud_icons = [

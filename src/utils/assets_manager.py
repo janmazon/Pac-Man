@@ -56,6 +56,10 @@ class AssetManager:
             ("assets/superpellet.png", True),
             ("assets/hud_frame.png", True),
             ("assets/ready.png", True),
+            # ("assets/defeat.png", True),
+            # ("assets/instructions.png", True),
+            ("assets/level_complete.png", True),
+            # ("assets/victory.png", True),
         ]
         for path, alpha in images:
             cls.get_image(path, alpha)
@@ -67,6 +71,7 @@ class AssetManager:
             ("assets/inky.png", 4),
             ("assets/clyde.png", 4),
             ("assets/hud_icons.png", 4),
+            # ("assets/ghosts_states.png", 4),
         ]
         for path, n_frames in sheets:
             cls.get_sheet(path, n_frames)
