@@ -20,6 +20,7 @@ class GameScreen(Screen):
         self._level_num: int = 1
         self._max_levels: int = 5
         self._ready_timer: float = 1.0
+        self._level_complete_timer: float = 0.0
         self._started: bool = False
 
     def on_enter(self) -> None:
@@ -35,10 +36,13 @@ class GameScreen(Screen):
 
     def handle_event(self, event: pygame.event.Event) -> None:
 
+        can_move = (
+            self._ready_timer <= 0.0 and self._level_complete_timer <= 0.0)
+
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             self._manager.push(PauseScreen(self._manager))
 
-        if event.type == pygame.KEYDOWN and self._ready_timer <= 0.0:
+        if event.type == pygame.KEYDOWN and can_move:
             if event.key == pygame.K_UP or event.key == pygame.K_w:
                 self._pacman.setNextDirection(Directions.NORTH)
                 self._started = True
@@ -54,6 +58,13 @@ class GameScreen(Screen):
 
     def update(self, dt: float) -> None:
 
+        if self._level_complete_timer > 0.0:
+            self._level_complete_timer = max(
+                0.0, self._level_complete_timer - dt)
+            if self._level_complete_timer <= 0.0:
+                self._advance_level()
+            return
+
         if self._ready_timer > 0.0:
             self._ready_timer = max(0.0, self._ready_timer - dt)
             return
@@ -65,7 +76,7 @@ class GameScreen(Screen):
         self._pacman.update(dt, self._level)
 
         if not self._level.has_remaining_pellets():
-            self._advance_level()
+            self._level_complete_timer = 2.0
 
         # Ejemplos de la logica
 
@@ -109,4 +120,5 @@ class GameScreen(Screen):
 
     def draw(self, surface: pygame.Surface) -> None:
         self._view.draw(surface, self._time, self._level_num,
-                        self._ready_timer > 0.0)
+                        self._ready_timer > 0.0,
+                        self._level_complete_timer > 0.0)
