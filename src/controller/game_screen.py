@@ -7,6 +7,7 @@ from .pause_screen import PauseScreen
 from src.models import Directions
 from mazegenerator import MazeGenerator
 from enum import Enum
+from .game_over_screen import GameOverScreen
 
 
 class Cheats(Enum):
@@ -15,6 +16,7 @@ class Cheats(Enum):
     GHOST_FREEZE = "ghos_freeze"
     EXTRA_LIVES = "extra_lives"
     INCREASE_SPEED = "increase_speed"
+    GAME_OVER = "game_over"
 
 
 class GameScreen(Screen):
@@ -67,6 +69,8 @@ class GameScreen(Screen):
                 self._activate_cheats(Cheats.INVINCIBILITY)
             elif event.key == pygame.K_p:
                 self._activate_cheats(Cheats.INCREASE_SPEED)
+            elif event.key == pygame.K_o:
+                self._activate_cheats(Cheats.GAME_OVER)
             elif event.key == pygame.K_UP or event.key == pygame.K_w:
                 self._pacman.setNextDirection(Directions.NORTH)
                 self._started = True
@@ -93,6 +97,8 @@ class GameScreen(Screen):
                 self._pacman.increase_speed()
             case Cheats.INVINCIBILITY:
                 self._pacman.change_invincibility()
+            case Cheats.GAME_OVER:
+                self._game_over()
 
     def update(self, dt: float) -> None:
 
@@ -185,6 +191,5 @@ class GameScreen(Screen):
                         self._level_complete_timer > 0.0)
 
     def _game_over(self) -> None:
-        from .main_menu_screen import MainMenuScreen
-        print("Fin del Jogo Makina")
-        self._manager.switch(MainMenuScreen(self._manager))
+        self._manager.switch(
+            GameOverScreen(self._manager, self._level.getScore()))
